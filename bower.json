@@ -1,0 +1,23 @@
+{
+    "name": "jstool-http",
+    "main": "http.js",
+    "version": "0.0.1",
+    "homepage": "https://github.com/jstools/http",
+    "authors": [
+        "Jesús Germade <jesus@germade.es>"
+    ],
+    "description": "simple javascript http handler",
+    "keywords": [
+        "javascript",
+        "jstools",
+        "http"
+    ],
+    "license": "ISC",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ]
+}
