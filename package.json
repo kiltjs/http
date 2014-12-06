@@ -1,6 +1,6 @@
 {
     "name": "jstool-http",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "http jstool example",
     "main": "http.js",
     "scripts": {
@@ -8,7 +8,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/jstools/jstool-http.git"
+        "url": "https://github.com/jstools/http.js.git"
     },
     "keywords": [
         "javascript",
@@ -18,9 +18,9 @@
     "author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/jstools/jstool-http/issues"
+        "url": "https://github.com/jstools/http.js/issues"
     },
-    "homepage": "https://github.com/jstools/jstool-http",
+    "homepage": "https://github.com/jstools/http.js",
     "devDependencies": {
         "grunt": "^0.4.5",
         "grunt-contrib-uglify": "latest",
