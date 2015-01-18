@@ -134,14 +134,14 @@
 
     http.get = http;
     ['head', 'options', 'post', 'patch', 'put', 'delete'].forEach(function (method) {
-	    http[method.toUpperCase()] = function (url, _options){
+	    http[method] = function (url, _options){
 
 			if( url instanceof Object ) {
 				_options = url;
 				url = _options.url;
 			}
 			_options = _options || {};
-			_options.method = method;
+			_options.method = method.toUpperCase();
 
 			return http(url, _options);
 	    }
