@@ -3,32 +3,76 @@
 	'use strict';
 	
 	if ( typeof window !== 'undefined' ) {
-		if ( window.fn ) {
-			fn.define('http', [ 'Promise', definition ]);
-		} else if( typeof Promise !== 'undefined' ) {
-			window.http = definition(Promise);
-		} else {
+		if( typeof Promise === 'undefined' ) {
 			throw 'Promise is required for http to be defined';
+		} else if ( window.fn ) {
+			fn.define('http', definition);
+		} else if( typeof Promise !== 'undefined' ) {
+			window.http = definition();
 		}
 	}
 
-})(function (Promise) {
+})(function () {
 	'use strict';
 
-	function ajax(url, args){
+	function extend () {
+		var auxArray = [],
+			dest = auxArray.shift.call(arguments),
+			src = auxArray.shift.call(arguments),
+			key;
 
-        if( !args ) args = ( url instanceof Object ) ? url : {};
-        if( args.url ) url = args.url;
-        if( !url ) return false;
-        
-        if( !args.method ) args.method = 'GET';
-        
-        if( !args.contentType ) {
-            if( /^json$/i.test(args.mode) ) args.contentType = 'application/json';
-            else args.contentType = 'application/x-www-form-urlencoded';
+		while( src ) {
+			for( key in src ) {
+				dest[key] = src[key];
+			}
+			src = auxArray.shift.call(arguments);
+		}
+
+		return dest;
+	}
+
+	function toTitleSlug(text) {
+		var key = text[0].toUpperCase() + text.substr(1);
+		return key.replace(/([a-z])([A-Z])/, function (match, lower, upper) {
+			return lower + '-' + upper;
+		});
+	}
+
+	function toCamelCase(text) {
+		var key = text[0].toLowerCase() + text.substr(1);
+		return key.replace(/([a-z])-([A-Z])/, function (match, lower, upper) {
+			return lower + upper;
+		});
+	}
+
+	function http(url, _options){
+
+		if( url instanceof Object ) {
+			_options = url;
+			url = _options.url;
+		}
+		_options = _options || {};
+
+		var options = extend({}, http.defaults), key;
+
+		for( key in _options ) {
+			if( _options[key] instanceof Function ) {
+				_options[key] = _options[key]();
+			}
+			if( options[key] instanceof Function ) {
+				options[key] = options[key]();
+			}
+			if( _options[key] instanceof Object ) {
+				extend(options[key], _options[key])
+			} else {
+				options[key] = _options[key];
+			}
+		}
+
+        if( !url ) {
+        	throw 'url missing';
+        	return false;
         }
-        
-        if( /^json$/i.test(args.mode) && isObject(args.data) ) args.data = JSON.stringify(args.data);
         
         var request = null;
         try	{ // Firefox, Opera 8.0+, Safari
@@ -41,35 +85,52 @@
 	        
 		var p = new Promise(function (resolve, reject) {
 
-	        request.open(args.method,url,(args.async === undefined) ? true : args.async);
+	        request.open(options.method,url,(options.async === undefined) ? true : options.async);
 	        request.onreadystatechange=function(){
 	            if( request.readyState == 'complete' || request.readyState == 4 ) {
+
+	            	request.headers = {};
+	            	request.getAllResponseHeaders().replace(/\s*([^\:]+)\s*\:\s*([^\n]+)\s*\n/g, function (match, key, value) {
+	            		request.headers[toCamelCase(key)] = value;
+	            	});
+
+	            	var data = request.responseText;
+	            	if( request.headers.contentType === 'application/json' ) {
+	            		data = JSON.parse(data);
+	            	}
+
 	                if( request.status >= 200 && request.status <300 ) {
-	                	var data = /^json$/i.test(args.mode) ? JSON.parse(request.responseText) : ( /^xml$/i.test(args.mode) ? request.responseXML : request.responseText );
-	                	resolve(data, request.status, request);
+	                	resolve( data, request.status, request);
 	                } else {
-	                    var data = /^json$/i.test(args.mode) ? JSON.parse(request.responseText) : ( /^xml$/i.test(args.mode) ? request.responseXML : request.responseText );
-	                    reject(data, request.status, request);
+	                    reject( data, request.status, request);
 	                }
 	            }
 	        }
-	        
-	        request.setRequestHeader('Content-Type',args.contentType);
-	        request.setRequestHeader('X-Requested-With','XMLHttpRequest');
-	        
-	        if( args.headers ) {
-	        	for( var header in args.headers ) {
-	                request.setRequestHeader(header,args.headers[header]);
-	        	}
+
+	        for( key in options.headers ) {
+	        	request.setRequestHeader( toTitleSlug(key), options.headers[key]);
 	        }
 	        
-	        request.send(args.data);
+	        request.send(options.data);
 		});
 
 		p.request = request;
 
+		p.success = p.then;
+		p.error = p.catch;
+		p.complete = p.finally;
+
 		return p;
     }
 
-    return ajax;
+    http.defaults = {
+    	method: 'get',
+    	headers: {
+	    	accept: 'application/json',
+	    	contentType: 'application/json',
+    		'hola': 'caracola'
+    	}
+    };
+
+    return http;
 });
