@@ -133,8 +133,8 @@
     };
 
     http.get = http;
-    ['post', 'patch', 'put', 'delete'].forEach(function (method) {
-	    http[method] = function (url, _options){
+    ['head', 'options', 'post', 'patch', 'put', 'delete'].forEach(function (method) {
+	    http[method.toUpperCase()] = function (url, _options){
 
 			if( url instanceof Object ) {
 				_options = url;
@@ -146,6 +146,6 @@
 			return http(url, _options);
 	    }
     });
-    
+
     return http;
 });
