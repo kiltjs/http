@@ -132,5 +132,20 @@
     	}
     };
 
+    http.get = http;
+    ['post', 'patch', 'put', 'delete'].forEach(function (method) {
+	    http[method] = function (url, _options){
+
+			if( url instanceof Object ) {
+				_options = url;
+				url = _options.url;
+			}
+			_options = _options || {};
+			_options.method = method;
+
+			return http(url, _options);
+	    }
+    });
+    
     return http;
 });
