@@ -83,7 +83,7 @@
         }
         if (request===null) { throw "Browser does not support HTTP Request"; }
 	        
-		var p = new Promise(function (resolve, reject) {
+		var catchCodes = {}, p = new Promise(function (resolve, reject) {
 
 	        request.open(options.method,url,(options.async === undefined) ? true : options.async);
 	        request.onreadystatechange=function(){
@@ -99,7 +99,9 @@
 	            		data = JSON.parse(data);
 	            	}
 
-	                if( request.status >= 200 && request.status <300 ) {
+	            	if( catchCodes[request.status] ) {
+	            		catchCodes[request.status].apply(request, [ data, resolve, reject ]);
+	            	} else if( request.status >= 200 && request.status <300 ) {
 	                	resolve( data, request.status, request);
 	                } else {
 	                    reject( data, request.status, request);
@@ -120,15 +122,20 @@
 		p.error = p.catch;
 		p.complete = p.finally;
 
+		p.catchResponse = function (code, handler) {
+			if( typeof code === 'string' && handler instanceof Function ) {
+				catchCodes[code] = handler;
+			}
+		};
+
 		return p;
     }
 
     http.defaults = {
     	method: 'get',
     	headers: {
-	    	accept: 'application/json',
-	    	contentType: 'application/json',
-    		'hola': 'caracola'
+	    	// accept: 'application/json',
+	    	contentType: 'application/json'
     	}
     };
 
