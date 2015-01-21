@@ -87,7 +87,7 @@
 
 	        request.open(options.method,url,(options.async === undefined) ? true : options.async);
 	        request.onreadystatechange=function(){
-	            if( request.readyState == 'complete' || request.readyState == 4 ) {
+	            if( request.readyState === 'complete' || request.readyState === 4 ) {
 
 	            	request.headers = {};
 	            	request.getAllResponseHeaders().replace(/\s*([^\:]+)\s*\:\s*([^\n]+)\s*\n/g, function (match, key, value) {
@@ -123,7 +123,7 @@
 		p.complete = p.finally;
 
 		p.catchResponse = function (code, handler) {
-			if( typeof code === 'string' && handler instanceof Function ) {
+			if( code && handler instanceof Function ) {
 				catchCodes[code] = handler;
 			}
 		};
