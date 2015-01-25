@@ -93,7 +93,7 @@
 			if( options[key] instanceof Function ) {
 				options[key] = options[key]();
 			}
-			if( _options[key] instanceof Object ) {
+			if( key !== 'data' && _options[key] instanceof Object ) {
 				extend(options[key], _options[key])
 			} else {
 				options[key] = _options[key];
@@ -162,13 +162,14 @@
 
     http.get = http;
     ['head', 'options', 'post', 'patch', 'put', 'delete'].forEach(function (method) {
-	    http[method] = function (url, _options){
+	    http[method] = function (url, data, _options){
 
 			if( url instanceof Object ) {
 				_options = url;
 				url = _options.url;
 			}
 			_options = _options || {};
+			_options.data = data;
 			_options.method = method.toUpperCase();
 
 			return http(url, _options);
