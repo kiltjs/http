@@ -45,6 +45,36 @@
 		});
 	}
 
+	function _triggerResponse (handlers, data, status, request) {
+		for( var i = 0, len = handlers.length; i < len; i++ ) {
+			handlers[i].apply(request, [data, status, request]);
+		}
+	}
+
+	function processResponse (request, handlers, resolve, reject, catchCodes) {
+		request.headers = {};
+    	request.getAllResponseHeaders().replace(/\s*([^\:]+)\s*\:\s*([^\n]+)\s*\n/g, function (match, key, value) {
+    		request.headers[toCamelCase(key)] = value;
+    	});
+
+    	var data = request.responseText;
+    	if( request.headers.contentType === 'application/json' ) {
+    		data = JSON.parse(data);
+    	}
+
+    	if( catchCodes[request.status] ) {
+    		catchCodes[request.status].apply(request, [ data, resolve, reject ]);
+    	} else if( request.status >= 200 && request.status <300 ) {
+    		_triggerResponse(handlers.success, data, request.status, request);
+    		_triggerResponse(handlers.always, data, request.status, request);
+        	resolve(data);
+        } else {
+        	_triggerResponse(handlers.error, data, request.status, request);
+    		_triggerResponse(handlers.always, data, request.status, request);
+            reject(data);
+        }
+	}
+
 	function http(url, _options){
 
 		if( url instanceof Object ) {
@@ -53,7 +83,8 @@
 		}
 		_options = _options || {};
 
-		var options = extend({}, http.defaults), key;
+		var options = extend({}, http.defaults),
+			key, handlers = { success: [], error: [], always: [] };
 
 		for( key in _options ) {
 			if( _options[key] instanceof Function ) {
@@ -86,31 +117,15 @@
 		var catchCodes = {}, p = new Promise(function (resolve, reject) {
 
 	        request.open(options.method,url,(options.async === undefined) ? true : options.async);
-	        request.onreadystatechange=function(){
-	            if( request.readyState === 'complete' || request.readyState === 4 ) {
-
-	            	request.headers = {};
-	            	request.getAllResponseHeaders().replace(/\s*([^\:]+)\s*\:\s*([^\n]+)\s*\n/g, function (match, key, value) {
-	            		request.headers[toCamelCase(key)] = value;
-	            	});
-
-	            	var data = request.responseText;
-	            	if( request.headers.contentType === 'application/json' ) {
-	            		data = JSON.parse(data);
-	            	}
-
-	            	if( catchCodes[request.status] ) {
-	            		catchCodes[request.status].apply(request, [ data, resolve, reject ]);
-	            	} else if( request.status >= 200 && request.status <300 ) {
-	                	resolve( data, request.status, request);
-	                } else {
-	                    reject( data, request.status, request);
-	                }
-	            }
-	        }
 
 	        for( key in options.headers ) {
 	        	request.setRequestHeader( toTitleSlug(key), options.headers[key]);
+	        }
+
+	        request.onreadystatechange=function(){
+	            if( request.readyState === 'complete' || request.readyState === 4 ) {
+	            	processResponse(request, handlers, resolve, reject, catchCodes);
+	            }
 	        }
 	        
 	        request.send(options.data);
@@ -118,9 +133,15 @@
 
 		p.request = request;
 
-		p.success = p.then;
-		p.error = p.catch;
-		p.complete = p.finally;
+		p.success = p.done = function (handler) {
+			handlers.success.push(handler);
+		};
+		p.error = p.fail = function (handler) {
+			handlers.error.push(handler);
+		};
+		p.complete = p.always = function (handler) {
+			handlers.always.push(handler);
+		};
 
 		p.catchResponse = function (code, handler) {
 			if( code && handler instanceof Function ) {
