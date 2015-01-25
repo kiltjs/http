@@ -127,8 +127,12 @@
 	            	processResponse(request, handlers, resolve, reject, catchCodes);
 	            }
 	        }
+
+	        if( options.data !== undefined && typeof options.data !== string ) {
+	        	options.data = JSON.stringify(options.data);
+	        }
 	        
-	        request.send( ( typeof options.data === string ) ? options.data : JSON.stringify(options.data) );
+	        request.send( options.data );
 		});
 
 		p.request = request;
