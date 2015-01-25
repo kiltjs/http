@@ -128,7 +128,7 @@
 	            }
 	        }
 	        
-	        request.send(options.data);
+	        request.send( ( typeof options.data === string ) ? options.data : JSON.stringify(options.data) );
 		});
 
 		p.request = request;
