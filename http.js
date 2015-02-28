@@ -219,6 +219,7 @@
             }
             _options = _options || {};
             _options.data = data;
+            _options.method = method;
 
             return http(url, _options);
         }
