@@ -118,13 +118,30 @@
         }
     }
 
+    function HttpUrl (url) {
+        this.url = url;
+    }
+
+    ['head', 'options', 'post', 'put', 'delete', 'patch'].forEach(function (method) {
+        HttpUrl.prototype[method] = function () {
+            var args = [this.url];
+
+            [].push.apply(args, arguments);
+
+            return http[method].apply(null, args);
+        };
+    });
+
     function http (url, _options){
 
         if( url instanceof Object ) {
             _options = url;
             url = _options.url;
         }
-        _options = _options || {};
+
+        if( !_options ) {
+            return new HttpUrl(url);
+        }
 
         var options = extend({}, http.defaults),
             key,

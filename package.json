@@ -1,6 +1,6 @@
 {
     "name": "jstool-http",
-    "version": "0.0.21",
+    "version": "0.0.22",
     "description": "http jstool example",
     "main": "http.js",
     "scripts": {
