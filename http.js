@@ -122,11 +122,15 @@
         this.url = url;
     }
 
-    ['head', 'options', 'post', 'put', 'delete', 'patch'].forEach(function (method) {
+    ['get', 'head', 'options', 'post', 'put', 'delete', 'patch'].forEach(function (method) {
         HttpUrl.prototype[method] = function () {
             var args = [this.url];
 
-            [].push.apply(args, arguments);
+            if( arguments.length ) {
+                [].push.apply(args, arguments);
+            } else {
+                args.push({});
+            }
 
             return http[method].apply(null, args);
         };
