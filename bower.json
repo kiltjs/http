@@ -1,7 +1,7 @@
 {
     "name": "jstool-http",
     "main": "http.js",
-    "version": "0.0.23",
+    "version": "0.0.24",
     "homepage": "https://github.com/jstools/http",
     "authors": [
         "Jesús Germade <jesus@germade.es>"
