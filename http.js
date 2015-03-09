@@ -33,6 +33,30 @@
         return dest;
     }
 
+    function serializeParams (params, prefix, notFirst) {
+        if( params ) {
+
+            prefix = prefix || '';
+            notFirst = notFirst || 0;
+
+            if( params instanceof Function ) {
+                return ( notFirst ? '&' : '' ) + encodeURIComponent(prefix) + '=' + encodeURIComponent( params() );
+            } else if( params instanceof Object ) {
+                var paramsStr = '';
+
+                for( var key in params ) {
+                    paramsStr += serializeParams( params[key], ( prefix ? (prefix + '.') : '' ) + key, notFirst++ );
+                }
+
+                return paramsStr;
+
+            } else {
+                return ( notFirst ? '&' : '' ) + encodeURIComponent(prefix) + '=' + encodeURIComponent(params);
+            }
+
+        } else return '';
+    }
+
     function toTitleSlug(text) {
         var key = text[0].toUpperCase() + text.substr(1);
         return key.replace(/([a-z])([A-Z])/, function (match, lower, upper) {
@@ -102,6 +126,8 @@
         var data = request.responseText;
         if( request.headers.contentType === 'application/json' ) {
             data = JSON.parse(data);
+        } else if( request.headers.contentType === 'application/xml' ) {
+            data = (new DOMParser()).parseFromString(data, 'text/xml');
         }
 
         if( catchCodes[request.status] ) {
@@ -126,11 +152,7 @@
         HttpUrl.prototype[method] = function () {
             var args = [this.url];
 
-            if( arguments.length ) {
-                [].push.apply(args, arguments);
-            } else {
-                args.push({});
-            }
+            [].push.apply(args, arguments);
 
             return http[method].apply(null, args);
         };
@@ -143,7 +165,7 @@
             url = _options.url;
         }
 
-        if( !_options ) {
+        if( _options === undefined ) {
             return new HttpUrl(url);
         }
 
@@ -169,6 +191,12 @@
         if( !url ) {
             throw 'url missing';
             return false;
+        }
+
+        if( /^get$/.test(options.method) && options.data instanceof Object && Object.keys(options.data).length ) {
+            console.log('options.data', options.data);
+            url += '?' + serializeParams(options.data);
+            options.data = null;
         }
         
         var request = null;
@@ -225,13 +253,11 @@
     http.defaults = {
         method: 'get',
         headers: {
-            // accept: 'application/json',
             contentType: 'application/json'
         }
     };
 
-    http.get = http;
-    ['head', 'options', 'post', 'put', 'delete'].forEach(function (method) {
+    ['get', 'head', 'options', 'post', 'put', 'delete'].forEach(function (method) {
         http[method] = function (url, data, _options){
 
             if( url instanceof Object ) {
