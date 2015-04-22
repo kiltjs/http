@@ -33,6 +33,19 @@
         return dest;
     }
 
+    function joinPath () {
+        var path = (arguments[0] || '').replace(/\/$/, '');
+
+        for( var i = 1, len = arguments.length - 1 ; i < len ; i++ ) {
+            path += '/' + arguments[len].replace(/^\/|\/$/, '');
+        }
+        if( len ) {
+            path += arguments[len] ? ( '/' + arguments[len].replace(/^\//, '') ) : '';
+        }
+
+        return path;
+    }
+
     function serializeParams (params, prefix, notFirst) {
         if( params ) {
 
@@ -160,6 +173,8 @@
 
     function http (url, _options){
 
+        url = ( url instanceof Array ) ? joinPath.apply(null, url) : url;
+
         if( url instanceof Object ) {
             _options = url;
             url = _options.url;
@@ -260,6 +275,8 @@
     ['get', 'head', 'options', 'post', 'put', 'delete'].forEach(function (method) {
         http[method] = function (url, data, _options){
 
+            url = ( url instanceof Array ) ? joinPath.apply(null, url) : url;
+
             if( url instanceof Object ) {
                 _options = url;
                 url = _options.url;
@@ -273,6 +290,9 @@
     });
 
     http.patch = function (url, data, options) {
+
+        url = ( url instanceof Array ) ? joinPath.apply(null, url) : url;
+
         if( url instanceof Object ) {
             url.method = 'patch';
             return http(url);
