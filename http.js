@@ -13,27 +13,40 @@
 })(function () {
     'use strict';
 
-    function extend () {
-        var auxArray = [],
-            dest = auxArray.shift.call(arguments),
-            src = auxArray.shift.call(arguments),
-            key;
+    var arrayShift = [].shift;
+
+    function _extend () {
+        var dest = arrayShift.call(arguments),
+            src = arrayShift.call(arguments),
+            i, len, keys;
 
         while( src ) {
-            for( key in src ) {
-                if( dest[key] instanceof Object && src[key] instanceof Object ) {
-                    dest[key] = extend({}, src[key]);
+            keys = Object.keys(src);
+            for( var i = 0, len = keys.length ; i < len ; i++ ) {
+                key = keys[i];
+                if( typeof dest[key] !== typeof src[key] ) {
+                    dest[key] = src[key];
                 } else {
                     dest[key] = src[key];
                 }
             }
-            src = auxArray.shift.call(arguments);
+            src = arrayShift.call(arguments);
         }
 
         return dest;
     }
 
-    function joinPath () {
+    function _newScope (data) {
+        var Data = function () {};
+        Data.prototype = data;
+        Data.$$extend = function (o) {
+            _extend(this, o);
+            return this;
+        };
+        return new Data();
+    }
+
+    function _joinPath () {
         var path = (arguments[0] || '').replace(/\/$/, '');
 
         for( var i = 1, len = arguments.length - 1 ; i < len ; i++ ) {
@@ -157,34 +170,45 @@
         }
     }
 
-    function HttpUrl (url) {
+    function HttpUrl (url, options) {
         this.url = url;
+        this.options = options || {};
     }
 
     ['get', 'head', 'options', 'post', 'put', 'delete', 'patch'].forEach(function (method) {
-        HttpUrl.prototype[method] = function () {
-            var args = [this.url];
-
-            [].push.apply(args, arguments);
-
-            return http[method].apply(null, args);
+        HttpUrl.prototype[method] = function (data) {
+            return http( this.url, _extend( newScope(this.options), {
+                data: data,
+                method: method
+            } ) );
         };
     });
+
+    function sendRequest (options, onSuccess, onError) {
+
+    }
 
     function http (url, _options){
 
         url = ( url instanceof Array ) ? joinPath.apply(null, url) : url;
 
         if( url instanceof Object ) {
+            console.log('url instanceof Object');
             _options = url;
             url = _options.url;
         }
 
         if( _options === undefined ) {
+            console.log('_options === undefined');
             return new HttpUrl(url);
+        } else if( _options.method === undefined ) {
+            console.log('_options.method === undefined');
+            return new HttpUrl(url, _options);
         }
 
-        var options = extend({}, http.defaults),
+        console.log(url, _options);
+
+        var options = _extend({}, http.defaults),
             key,
             catchCodes = {},
             handlersQueue = [];
@@ -197,7 +221,7 @@
                 options[key] = options[key]();
             }
             if( key !== 'data' && _options[key] instanceof Object ) {
-                extend(options[key], _options[key])
+                _extend(options[key], _options[key])
             } else {
                 options[key] = _options[key];
             }
