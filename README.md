@@ -1,6 +1,7 @@
-[![Bower version](https://badge.fury.io/bo/jstool-http.svg)](http://badge.fury.io/bo/jstool-http)
 
-jstool-http
+[![Bower version](https://badge.fury.io/bo/jn-http.svg)](http://badge.fury.io/bo/jn-http)
+
+jn-http
 ===========
 
 ```.js
