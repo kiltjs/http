@@ -1,8 +1,8 @@
 {
-    "name": "jn-http",
+    "name": "jstools-http",
     "main": "http.js",
     "version": "0.0.25",
-    "homepage": "https://github.com/jstools/jn-http",
+    "homepage": "https://github.com/jstools/http",
     "authors": [
         "Jesús Germade <jesus@germade.es>"
     ],

@@ -1,8 +1,7 @@
-
-[![Bower version](https://badge.fury.io/bo/jn-http.svg)](http://badge.fury.io/bo/jn-http)
-
-jn-http
-===========
+jsTools: http
+================
+[![Bower version](https://badge.fury.io/bo/jstools-http.svg)](http://badge.fury.io/bo/jstools-http)
+[![npm version](https://badge.fury.io/js/jstools-http.svg)](http://badge.fury.io/js/jstools-http)
 
 ```.js
 http.get('/items.json');
