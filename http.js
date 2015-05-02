@@ -1,11 +1,11 @@
 
-(function (factory) {
+(function (root, factory) {
     'use strict';
 
-    if ( typeof window !== 'undefined' ) {
-        if ( window.define ) {
+    if ( typeof root !== 'undefined' ) {
+        if ( root.define ) {
             define('$http', factory);
-        } else if ( window.angular ) {
+        } else if ( root.angular ) {
             var $http = factory();
             angular.module('jstools.http', [])
               .provider(function () {
@@ -18,12 +18,12 @@
                   return $http;
                 };
               });
-        } else if( !window.$http ) {
-            window.$http = factory();
+        } else if( !root.$http ) {
+            root.$http = factory();
         }
     }
 
-})(function () {
+})(this, function () {
     'use strict';
 
     function extend () {
