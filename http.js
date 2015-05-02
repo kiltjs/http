@@ -1,12 +1,25 @@
 
-(function (definition) {
+(function (factory) {
     'use strict';
-    
+
     if ( typeof window !== 'undefined' ) {
-        if ( window.fn ) {
-            fn.define('http', definition);
-        } else if( !window.http ) {
-            window.http = definition();
+        if ( window.define ) {
+            define('$http', factory);
+        } else if ( window.angular ) {
+            var $http = factory();
+            angular.module('jstools.http', [])
+              .provider(function () {
+
+                this.config = function (configFn) {
+                  configFn.call(null, $http);
+                };
+
+                this.$get = function () {
+                  return $http;
+                };
+              });
+        } else if( !window.$http ) {
+            window.$http = factory();
         }
     }
 
@@ -213,7 +226,7 @@
             url += '?' + serializeParams(options.data);
             options.data = null;
         }
-        
+
         var request = null;
         try { // Firefox, Opera 8.0+, Safari
             request = new XMLHttpRequest();
@@ -238,7 +251,7 @@
         if( options.data !== undefined && typeof options.data !== 'string' ) {
             options.data = JSON.stringify(options.data);
         }
-        
+
         request.send( options.data );
 
         request.then = function (onFulfilled, onRejected) {
