@@ -2,7 +2,18 @@ jEngine: $http
 ================
 [![Bower version](https://badge.fury.io/bo/jstools-http.svg)](http://badge.fury.io/bo/jstools-http)
 [![npm version](https://badge.fury.io/js/jstools-http.svg)](http://badge.fury.io/js/jstools-http)
+Installation
+------------
+```.sh
+npm install jstools-http --save
+```
+or
+```.sh
+bower install jstools-http --save
+```
 
+Usage
+-----
 ```.js
 $http.get('/items.json');
 
