@@ -1,15 +1,15 @@
 jEngine: $http
 ================
-[![Bower version](https://badge.fury.io/bo/jstools-http.svg)](http://badge.fury.io/bo/jstools-http)
-[![npm version](https://badge.fury.io/js/jstools-http.svg)](http://badge.fury.io/js/jstools-http)
+[![Bower version](https://badge.fury.io/bo/jengine-http.svg)](http://badge.fury.io/bo/jengine-http)
+[![npm version](https://badge.fury.io/js/jengine-http.svg)](http://badge.fury.io/js/jengine-http)
 Installation
 ------------
 ```.sh
-npm install jstools-http --save
+npm install jengine-http --save
 ```
 or
 ```.sh
-bower install jstools-http --save
+bower install jengine-http --save
 ```
 
 Usage

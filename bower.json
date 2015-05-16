@@ -1,5 +1,5 @@
 {
-    "name": "jstools-http",
+    "name": "jengine-http",
     "main": "http.js",
     "version": "0.0.28",
     "homepage": "https://github.com/jstools/http",
