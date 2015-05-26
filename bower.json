@@ -1,7 +1,7 @@
 {
     "name": "jengine-http",
     "main": "http.js",
-    "version": "0.0.28",
+    "version": "0.0.29",
     "homepage": "https://github.com/jstools/http",
     "authors": [
         "Jesús Germade <jesus@germade.es>"

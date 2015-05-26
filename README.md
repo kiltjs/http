@@ -14,8 +14,9 @@ bower install jengine-http --save
 
 Usage
 -----
-```.js
-$http.get('/items.json');
+``` js
+$http.get('/items.json', { prop1: 'value1' });
+// GET .../items.json?prop1=value1
 
 $http.post('/items.json', {
 	prop1: 'value1'
@@ -32,6 +33,29 @@ $http.patch('/items.json', {
 });
 
 $http.patch('/items.json')
+	.remove('/prop1')
+	.add('/list/-', { subprop: 'sample value' })
+	.submit();
+```
+
+Cached URL
+----------
+``` js
+var httpItems = $http('items.json');
+
+httpItems.get({ prop1: 'value1' });
+
+httpItems.post({ prop1: 'value1' });
+
+httpItems.put({	prop1: 'another value' });
+
+httpItems.delete();
+
+httpItems.patch({
+	op: 'add', path: '/prop1', value: 'one more value'
+});
+
+httpItems.patch()
 	.remove('/prop1')
 	.add('/list/-', { subprop: 'sample value' })
 	.submit();

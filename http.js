@@ -26,7 +26,41 @@
 })(this, function () {
     'use strict';
 
-    function extend () {
+    function _typeOf (type) {
+      return function (o) {
+        return typeof o === type;
+      };
+    }
+
+    function _instanceOf (obj) {
+      return function (o) {
+        return o instanceof obj;
+      };
+    }
+
+    var _isObject = _typeOf('object'),
+        _isArray = _instanceOf(Array),
+        _isFunction = _instanceOf(Function),
+        _isString = _typeOf('string');
+
+    function _copy (obj) {
+      if( _isArray(obj) ) {
+        var list = [];
+        for( var i = 0, len = obj.length; i < len ; i++ ) {
+          list[i] = _copy(obj[i]);
+        }
+        return list;
+      } else if( _isObject(obj) ) {
+        var o = {};
+        for( var key in obj ) {
+          o[key] = _copy(obj[key]);
+        }
+        return o;
+      }
+      return obj;
+    }
+
+    function _extend () {
         var auxArray = [],
             dest = auxArray.shift.call(arguments),
             src = auxArray.shift.call(arguments),
@@ -34,8 +68,8 @@
 
         while( src ) {
             for( key in src ) {
-                if( dest[key] instanceof Object && src[key] instanceof Object ) {
-                    dest[key] = extend({}, src[key]);
+                if( _isObject(dest[key]) && _isObject(src[key]) ) {
+                    dest[key] = _copy(src[key]);
                 } else {
                     dest[key] = src[key];
                 }
@@ -44,6 +78,17 @@
         }
 
         return dest;
+    }
+
+    function _resolveFunctions (o) {
+      for( var key in o ) {
+        if( _isFunction(o[key]) ) {
+          o[key] = o[key]();
+        } else if( _isObject(o[key]) ) {
+          _resolveFunctions(o[key]);
+        }
+      }
+      return o;
     }
 
     function joinPath () {
@@ -65,9 +110,9 @@
             prefix = prefix || '';
             notFirst = notFirst || 0;
 
-            if( params instanceof Function ) {
+            if( _isFunction(params) ) {
                 return ( notFirst ? '&' : '' ) + encodeURIComponent(prefix) + '=' + encodeURIComponent( params() );
-            } else if( params instanceof Object ) {
+            } else if( _isObject(params) ) {
                 var paramsStr = '';
 
                 for( var key in params ) {
@@ -106,11 +151,11 @@
             step = queue.$finally.shift();
         }
 
-        if( step instanceof Function ) {
+        if( _isFunction(step) ) {
 
             step(data, request.status, request);
 
-        } else if( step instanceof Object ) {
+        } else if( _isObject(step) ) {
 
             if( resolved && step.resolve ) {
                 newData = step.resolve(data, request.status, request);
@@ -186,9 +231,9 @@
 
     function http (url, _options){
 
-        url = ( url instanceof Array ) ? joinPath.apply(null, url) : url;
+        url = _isArray(url) ? joinPath.apply(null, url) : url;
 
-        if( url instanceof Object ) {
+        if( _isObject(url) ) {
             _options = url;
             url = _options.url;
         }
@@ -197,31 +242,17 @@
             return new HttpUrl(url);
         }
 
-        var options = extend({}, http.defaults),
+        var options = _resolveFunctions( _extend(_copy(http.defaults), _options) ),
             key,
             catchCodes = {},
             handlersQueue = [];
-
-        for( key in _options ) {
-            if( _options[key] instanceof Function ) {
-                _options[key] = _options[key]();
-            }
-            if( options[key] instanceof Function ) {
-                options[key] = options[key]();
-            }
-            if( key !== 'data' && _options[key] instanceof Object ) {
-                extend(options[key], _options[key])
-            } else {
-                options[key] = _options[key];
-            }
-        }
 
         if( !url ) {
             throw 'url missing';
             return false;
         }
 
-        if( /^get$/.test(options.method) && options.data instanceof Object && Object.keys(options.data).length ) {
+        if( /^get$/.test(options.method) && _isObject(options.data) && Object.keys(options.data).length ) {
             console.log('options.data', options.data);
             url += '?' + serializeParams(options.data);
             options.data = null;
@@ -239,30 +270,30 @@
         request.open( options.method.toUpperCase(), url, (options.async === undefined) ? true : options.async );
 
         for( key in options.headers ) {
-            request.setRequestHeader( toTitleSlug(key), options.headers[key]);
+            request.setRequestHeader( toTitleSlug(key), options.headers[key] );
         }
 
-        request.onreadystatechange=function(){
+        request.onreadystatechange = function(){
             if( request.readyState === 'complete' || request.readyState === 4 ) {
                 processResponse(request, handlersQueue, catchCodes);
             }
-        }
+        };
 
-        if( options.data !== undefined && typeof options.data !== 'string' ) {
+        if( options.data !== undefined && !_isString(options.data) ) {
             options.data = JSON.stringify(options.data);
         }
 
         request.send( options.data );
 
         request.then = function (onFulfilled, onRejected) {
-            if( onFulfilled instanceof Function ) {
+            if( _isFunction(onFulfilled) ) {
                 handlersQueue.push({ resolve: onFulfilled, reject: onRejected });
             }
             return request;
         };
 
         request.catch = function (onRejected) {
-            if( onRejected instanceof Function ) {
+            if( _isFunction(onRejected) ) {
                 handlersQueue.push({ resolve: null, reject: onRejected });
             }
             return request;
@@ -288,9 +319,9 @@
     ['get', 'head', 'options', 'post', 'put', 'delete'].forEach(function (method) {
         http[method] = function (url, data, _options){
 
-            url = ( url instanceof Array ) ? joinPath.apply(null, url) : url;
+            url = ( _isArray(url) ) ? joinPath.apply(null, url) : url;
 
-            if( url instanceof Object ) {
+            if( _isObject(url) ) {
                 _options = url;
                 url = _options.url;
             }
@@ -304,16 +335,16 @@
 
     http.patch = function (url, data, options) {
 
-        url = ( url instanceof Array ) ? joinPath.apply(null, url) : url;
+        url = ( _isArray(url) ) ? joinPath.apply(null, url) : url;
 
-        if( url instanceof Object ) {
+        if( _isObject(url) ) {
             url.method = 'patch';
             return http(url);
-        } else if( typeof url === 'string' ) {
-            options = options instanceof Object ? options : {};
+        } else if( _isString(url) ) {
+            options = _isObject(options) ? options : {};
 
             if( data ) {
-                return http(url, extend(options, {
+                return http(url, _extend(options, {
                     method: 'patch',
                     data: data
                 }) );
@@ -352,7 +383,7 @@
 
                             data = data || patchOps;
 
-                            return http(url, extend(options, {
+                            return http(url, _extend(options, {
                                 method: 'patch',
                                 data: data
                             }) );
