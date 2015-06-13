@@ -142,50 +142,62 @@
         });
     }
 
-    function processQueue (request, queue, data, resolved) {
-        var step = queue.shift(),
-            newData = undefined;
+    function getStep( queue, fulfilled ) {
+      var step = queue.shift(), method = fulfilled ? 'onFulfill' : 'onReject';
 
-
-        if( !step ) {
-            step = queue.$finally.shift();
+      while( step ) {
+        if( step[method] ) {
+          return step[method];
         }
+        step = queue.shift();
+      }
 
-        if( _isFunction(step) ) {
+      return;
+    }
 
-            step(data, request.status, request);
+    function processQueue (queue, data, fulfilled) {
+        // console.log('processQueue', request, queue, data, fulfilled);
 
-        } else if( _isObject(step) ) {
-
-            if( resolved && step.resolve ) {
-                newData = step.resolve(data, request.status, request);
-            }
-
-            if( !resolved && step.reject ) {
-                newData = step.reject(data, request.status, request);
-            }
-
-            if( newData && newData.then ) {
-                queue.forEach(function (step) {
-                    newData.then(step.resolve, step.reject);
-                });
-
-                if( newData.finally ) {
-                    queue.$finally.forEach(function (step) {
-                        newData.finally(step.resolve, step.reject);
-                    });
-                } else if( queue.$finally.length ) {
-                    throw 'received promise not implements finally';
-                }
-
-                step = false;
-            }
-
-        }
+        var step = getStep( queue, fulfilled ),
+            newData;
 
         if( step ) {
-            processQueue(request, queue, (newData === undefined) ? data : newData, resolved);
+
+          try {
+            newData = step(data);
+            fulfilled = true;
+          } catch (reason) {
+            newData = reason;
+            fulfilled = false;
+          }
+
+          if( newData && newData.then ) {
+            newData.then(function (result) {
+              processQueue(request, queue, result, true);
+            }, function (reason) {
+              processQueue(request, queue, reason, false);
+            });
+          } else {
+            processQueue(queue, (newData === undefined) ? data : newData, fulfilled);
+          }
+
+        } else {
+            step = queue.$finally.shift();
+
+            while ( step instanceof Function ) {
+              step(data);
+              step = queue.$finally.shift();
+            }
+            return;
         }
+    }
+
+    function requestResponse (request, data) {
+      return {
+        data: data,
+        status: request.status,
+        request: request
+      };
     }
 
     function processResponse (request, handlersQueue, catchCodes) {
@@ -203,15 +215,14 @@
 
         if( catchCodes[request.status] ) {
             catchCodes[request.status].apply(request, [ data, function (data) {
-                processQueue(request, handlersQueue, data, true);
+                processQueue(handlersQueue, requestResponse(request, data), true);
             }, function (reason) {
-                processQueue(request, handlersQueue, reason, true);
+                processQueue(handlersQueue, requestResponse(request, reason), true);
             } ]);
         } else if( request.status >= 200 && request.status < 300 ) {
-            request.$resolved = true;
-            processQueue(request, handlersQueue, data, true);
+            processQueue(handlersQueue, requestResponse(request, data), true);
         } else {
-            processQueue(request, handlersQueue, data, false);
+            processQueue(handlersQueue, requestResponse(request, data), false);
         }
     }
 
@@ -287,14 +298,14 @@
 
         request.then = function (onFulfilled, onRejected) {
             if( _isFunction(onFulfilled) ) {
-                handlersQueue.push({ resolve: onFulfilled, reject: onRejected });
+                handlersQueue.push({ onFulfill: onFulfilled, onReject: onRejected });
             }
             return request;
         };
 
         request.catch = function (onRejected) {
             if( _isFunction(onRejected) ) {
-                handlersQueue.push({ resolve: null, reject: onRejected });
+                handlersQueue.push({ onFulfill: null, onReject: onRejected });
             }
             return request;
         };
