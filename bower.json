@@ -1,23 +1,23 @@
 {
-    "name": "jstools-http",
-    "main": "dist/http.js",
-    "version": "0.0.30",
-    "homepage": "https://github.com/jstools/http",
-    "authors": [
-        "Jesús Germade <jesus@germade.es>"
-    ],
-    "description": "simple javascript http handler",
-    "keywords": [
-        "javascript",
-        "jstools",
-        "http"
-    ],
-    "license": "ISC",
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "test",
-        "tests"
-    ]
+	"name": "jstools-http",
+	"main": "dist/http.js",
+	"version": "0.0.31",
+	"homepage": "https://github.com/jstools/http",
+	"authors": [
+		"Jesús Germade <jesus@germade.es>"
+	],
+	"description": "simple javascript http handler",
+	"keywords": [
+		"javascript",
+		"jstools",
+		"http"
+	],
+	"license": "ISC",
+	"ignore": [
+		"**/.*",
+		"node_modules",
+		"bower_components",
+		"test",
+		"tests"
+	]
 }
