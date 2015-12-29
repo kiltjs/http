@@ -20,7 +20,14 @@ require('nitro')(function (nitro) {
         plugins: [nitro.require('babelify')]
       })
       .process('uglify')
-      .writeFile('dist/http.js')
+      .writeFile('dist/http.js');
+
+    nitro.load('src/http-patch.js')
+      .process('browserify', {
+        plugins: [nitro.require('babelify')]
+      })
+      .process('uglify')
+      .writeFile('dist/http-patch.js');
 
   });
 
