@@ -1,32 +1,31 @@
 {
-    "name": "jengine-http",
-    "version": "0.0.30",
-    "description": "http jstool example",
-    "main": "http.js",
-    "scripts": {
-        "test": "grunt test"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/jstools/http.git"
-    },
-    "keywords": [
-        "javascript",
-        "jstools",
-        "demo"
-    ],
-    "author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/jstools/http/issues"
-    },
-    "homepage": "https://github.com/jstools/http",
-    "devDependencies": {
-        "grunt": "^0.4.5",
-        "grunt-contrib-uglify": "latest",
-        "grunt-increase-version": "latest",
-        "grunt-shell": "latest",
-        "load-grunt-tasks": "latest",
-        "time-grunt": "latest"
-    }
+  "name": "jstools-http",
+  "version": "0.0.30",
+  "description": "http jstool example",
+  "main": "src/http.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jstools/http.git"
+  },
+  "keywords": [
+    "javascript",
+    "jstools",
+    "demo"
+  ],
+  "author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jstools/http/issues"
+  },
+  "homepage": "https://github.com/jstools/http",
+  "dependencies": {
+    "nitro-tools": "^0.1.1",
+    "promise-q": "^0.1.18"
+  },
+  "devDependencies": {
+    "nitro": "^1.5.41"
+  }
 }

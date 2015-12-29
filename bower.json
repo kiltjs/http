@@ -1,6 +1,6 @@
 {
-    "name": "jengine-http",
-    "main": "http.js",
+    "name": "jstools-http",
+    "main": "dist/http.js",
     "version": "0.0.30",
     "homepage": "https://github.com/jstools/http",
     "authors": [
