@@ -1,7 +1,7 @@
 
 var http = require('./http');
 
-http.patch = function (url, data, config) {
+http.jsonPatch = function (url, data, config) {
 
 	url = ( _isArray(url) ) ? joinPath.apply(null, url) : url;
 
