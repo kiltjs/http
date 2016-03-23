@@ -214,13 +214,13 @@ http.base = function (url, baseConfig) {
   ['get', 'delete'].forEach(function (method) {
     based[method] = function (p, _config ) {
       return http( bp(p), _.merge(_.copy(baseConfig), _config, { method: method }));
-    }
+    };
   });
 
   ['post', 'put', 'patch'].forEach(function (method) {
     based[method] = function (p, data, _config ) {
       return http( bp(p), _.merge(_.copy(baseConfig), _config, { method: method, data: data }) );
-    }
+    };
   });
 
   return based;
