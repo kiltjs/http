@@ -1,15 +1,15 @@
-jEngine: $http
+http-browser
 ================
-[![Bower version](https://badge.fury.io/bo/jengine-http.svg)](http://badge.fury.io/bo/jengine-http)
-[![npm version](https://badge.fury.io/js/jengine-http.svg)](http://badge.fury.io/js/jengine-http)
+[![Bower version](https://badge.fury.io/bo/http-browser.svg)](http://badge.fury.io/bo/http-browser)
+[![npm version](https://badge.fury.io/js/http-browser.svg)](http://badge.fury.io/js/http-browser)
 Installation
 ------------
 ```.sh
-npm install jengine-http --save
+npm install http-browser --save
 ```
 or
 ```.sh
-bower install jengine-http --save
+bower install http-browser --save
 ```
 
 Usage
