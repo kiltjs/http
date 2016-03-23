@@ -133,8 +133,6 @@ function http (url, config) {
     };
 
     if( config.contentType ) {
-      // addHeadersToRequest(request, { contentType: config.contentType });
-      request.setRequestHeader( 'Content-Type', config.contentType );
 
       if( config.data && config.contentType === 'application/json' && typeof config.data !== 'string' ) {
         config.data = JSON.stringify(config.data);
@@ -150,6 +148,9 @@ function http (url, config) {
         }
       }
     }
+
+    // addHeadersToRequest(request, { contentType: config.contentType });
+    request.setRequestHeader( 'Content-Type', config.contentType );
 
     request.send( config.data );
 
@@ -174,7 +175,7 @@ http.plainResponse = function (response) {
 
 ['get', 'delete'].forEach(function (method) {
   http[method] = function (url, config) {
-    return http(_.extend(_.copy(config), {
+    return http(url, _.extend(_.copy(config || {}), {
       method: method
     }));
   };
@@ -182,7 +183,7 @@ http.plainResponse = function (response) {
 
 ['post', 'put', 'patch'].forEach(function (method) {
   http[method] = function (url, data, config) {
-    return http(_.extend(_.copy(config), {
+    return http(url, _.extend(_.copy(config || {}), {
       method: method,
       data: data || {}
     }));
