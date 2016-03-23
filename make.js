@@ -22,12 +22,12 @@ require('nitro')(function (nitro) {
       .process('uglify')
       .writeFile('dist/http.js');
 
-    nitro.load('src/http-patch.js')
+    nitro.load('src/http-json-patch.js')
       .process('browserify', {
         plugins: [nitro.require('babelify')]
       })
       .process('uglify')
-      .writeFile('dist/http-patch.js');
+      .writeFile('dist/http-json-patch.js');
 
   });
 

@@ -1,14 +1,14 @@
 
 // factory http
 
-var $q = require('promise-q'),
+var $q = require('q-promise'),
     _ = require('nitro-tools/lib/kit-extend');
 
 function resolveFunctions (o, thisArg, args) {
   for( var key in o ) {
     if( o[key] instanceof Function ) {
       o[key] = o[key].apply(thisArg, args || []);
-    } else if( typeof o[key] === 'string' ) {
+    } else if( typeof o[key] === 'object' && o[key] !== null ) {
       o[key] = resolveFunctions(o[key], thisArg, args);
     }
   }
@@ -16,7 +16,7 @@ function resolveFunctions (o, thisArg, args) {
 }
 
 function headerToTitleSlug(text) {
-  console.log('headerToTitleSlug', text);
+  // console.log('headerToTitleSlug', text);
   var key = text.replace(/([a-z])([A-Z])/g, function (match, lower, upper) {
       return lower + '-' + upper;
   });
@@ -47,15 +47,47 @@ function _getHeaders (request) {
   return headers;
 }
 
+function headersGetter (request) {
+  var headersCache;
+  return function () {
+    if( !headersCache ) {
+      headersCache = _getHeaders(request);
+    }
+    return headersCache;
+  };
+}
+
+function serializeParams (params) {
+  var result = '';
+
+  for( var param in params ) {
+    result += ( result ? '&' : '' ) + param + '=' + encodeURIComponent(config.params[param]);
+  }
+  return result;
+}
+
+function addHeadersToRequest (req, headers) {
+  for( var key in headers ) {
+    req.setRequestHeader( headerToTitleSlug(key), headers[key] );
+  }
+}
+
 function http (url, config) {
 
-  if( config === undefined ) {
-    http.url(url);
+  if( config === undefined && typeof url === 'object' && url !== null ) {
+    config = url;
+    url = config.url;
+  } else {
+    config = config || {};
+    config.url = url;
   }
 
-  config = resolveFunctions( _.copy(config || {}) );
-  config.headers = config.headers || {};
-  config.url = url;
+  config = resolveFunctions( _.copy(config) );
+  config.method = ( config.method || 'GET').toUpperCase();
+
+  if( typeof config.url !== 'string' ) {
+    throw new Error('url should be a string');
+  }
 
   return $q(function (resolve, reject) {
 
@@ -70,37 +102,26 @@ function http (url, config) {
     if( request === null ) { throw 'Browser does not support HTTP Request'; }
 
     if( config.params ) {
-      var i = 0;
-      for( var param in config.params ) {
-        url += ( i++ ? '&' : ( /\?/.test(url) ? '&' : '?' ) ) + param + '=' + encodeURIComponent(config.params[param]);
-      }
+      url += ( /\?/.test(url) ? '&' : '?' ) + serializeParams( config.params );
     }
 
-    request.open( ( config.method || 'get').toUpperCase(), url );
+    request.open( config.method, url );
 
     if( config.withCredentials ) {
       request.withCredentials = true;
     }
 
-    for( var key in config.headers ) {
-        request.setRequestHeader( headerToTitleSlug(key), config.headers[key] );
-    }
+    addHeadersToRequest(request, config.headers || {} );
+
+    request.config = config;
 
     request.onreadystatechange = function(){
       if( request.readyState === 'complete' || request.readyState === 4 ) {
         var response = {
-          config: request.config,
+          config: config,
           data: parseContentType(request.getResponseHeader('content-type'), request.responseText, request.responseXML),
           status: request.status,
-          headers: (function () {
-            var headersCache;
-            return function () {
-              if( !headersCache ) {
-                headersCache = _getHeaders(request);
-              }
-              return headersCache;
-            };
-          })(),
+          headers: headersGetter(request),
           xhr: request
         };
         if( request.status >= 200 && request.status < 300 ) {
@@ -111,14 +132,11 @@ function http (url, config) {
       }
     };
 
-    request.config = config;
-
-    if( typeof config.data !== 'string'  ) {}
-
     if( config.contentType ) {
+      // addHeadersToRequest(request, { contentType: config.contentType });
       request.setRequestHeader( 'Content-Type', config.contentType );
 
-      if( config.contentType === 'application/json' && typeof config.data !== 'string' ) {
+      if( config.data && config.contentType === 'application/json' && typeof config.data !== 'string' ) {
         config.data = JSON.stringify(config.data);
       }
 
@@ -127,7 +145,9 @@ function http (url, config) {
         config.contentType = 'text/html';
       } else {
         config.contentType = 'application/json';
-        config.data = JSON.stringify(config.data);
+        if( config.data ) {
+          config.data = JSON.stringify(config.data);
+        }
       }
     }
 
@@ -135,6 +155,8 @@ function http (url, config) {
 
   });
 }
+
+http.serialize = serializeParams;
 
 http.noCache = function (url, config) {
   url += ( /\?/.test(url) ? '&' : '?' ) + 't=' + new Date().getTime();
@@ -152,28 +174,56 @@ http.plainResponse = function (response) {
 
 ['get', 'delete'].forEach(function (method) {
   http[method] = function (url, config) {
-    config = _.copy(config || {});
-    config.method = method;
-    return http(config);
+    return http(_.extend(_.copy(config), {
+      method: method
+    }));
   };
 });
 
-['post', 'put'].forEach(function (method) {
+['post', 'put', 'patch'].forEach(function (method) {
   http[method] = function (url, data, config) {
-    config = _.copy(config || {});
-    config.data = data || {};
-    config.method = method;
-    return http(config);
+    return http(_.extend(_.copy(config), {
+      method: method,
+      data: data || {}
+    }));
   };
 });
 
-http.url = function (url) {
-  var urlFn = function () {
-    return http.get.apply(null, [url].concat( [].slice.call(arguments) ) );
+// basePath
+
+function basePath (bp) {
+  if( /\/$/.test(bp) ) {
+    bp = bp.replace(/\/$/,'');
+  }
+  return function (p) {
+    if( !p ) {
+      return bp;
+    }
+    return bp + ( /^\//.test(p) ? '' : '/' ) + p;
   };
-  ['get', 'post', 'put', 'delete'].forEach(function (method) {
-    return http[method].apply(null, [url].concat( [].slice.call(arguments) ) );
+}
+
+http.base = function (url, baseConfig) {
+  var bp = basePath(url),
+      based = function () {
+        return based.get.apply(this, arguments);
+      };
+
+  baseConfig = baseConfig || {};
+
+  ['get', 'delete'].forEach(function (method) {
+    based[method] = function (p, _config ) {
+      return http( bp(p), _.merge(_.copy(baseConfig), _config, { method: method }));
+    }
   });
+
+  ['post', 'put', 'patch'].forEach(function (method) {
+    based[method] = function (p, data, _config ) {
+      return http( bp(p), _.merge(_.copy(baseConfig), _config, { method: method, data: data }) );
+    }
+  });
+
+  return based;
 };
 
 module.exports = http;
