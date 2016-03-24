@@ -4,12 +4,12 @@
 var $q = require('q-promise'),
     _ = require('nitro-tools/lib/kit-extend');
 
-function resolveFunctions (o, thisArg, args) {
+function resolveFunctions (o, args, thisArg) {
   for( var key in o ) {
     if( o[key] instanceof Function ) {
       o[key] = o[key].apply(thisArg, args || []);
     } else if( typeof o[key] === 'object' && o[key] !== null ) {
-      o[key] = resolveFunctions(o[key], thisArg, args);
+      o[key] = resolveFunctions(o[key], args, thisArg);
     }
   }
   return o;
@@ -61,7 +61,7 @@ function serializeParams (params) {
   var result = '';
 
   for( var param in params ) {
-    result += ( result ? '&' : '' ) + param + '=' + encodeURIComponent(config.params[param]);
+    result += ( result ? '&' : '' ) + param + '=' + encodeURIComponent(params[param]);
   }
   return result;
 }
@@ -82,7 +82,8 @@ function http (url, config) {
     config.url = url;
   }
 
-  config = resolveFunctions( _.copy(config) );
+  config = _.copy(config);
+  config = resolveFunctions( config, [config], null );
   config.method = ( config.method || 'GET').toUpperCase();
 
   if( typeof config.url !== 'string' ) {
@@ -138,19 +139,19 @@ function http (url, config) {
         config.data = JSON.stringify(config.data);
       }
 
-    } else {
-      if( typeof config.data === 'string' ) {
-        config.contentType = 'text/html';
-      } else {
-        config.contentType = 'application/json';
-        if( config.data ) {
-          config.data = JSON.stringify(config.data);
-        }
+    } else if( config.data instanceof FormData ) {
+      config.contentType = 'multipart/form-data';
+    } else if( typeof config.data === 'object' && config.data !== null ) {
+      config.contentType = 'application/json';
+      if( config.data ) {
+        config.data = JSON.stringify(config.data);
       }
     }
 
-    // addHeadersToRequest(request, { contentType: config.contentType });
-    request.setRequestHeader( 'Content-Type', config.contentType );
+    if( config.contentType ) {
+      // addHeadersToRequest(request, { contentType: config.contentType });
+      request.setRequestHeader( 'Content-Type', config.contentType );
+    }
 
     request.send( config.data );
 
