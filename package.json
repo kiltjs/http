@@ -1,6 +1,6 @@
 {
 	"name": "http-browser",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"description": "http jstool example",
 	"main": "src/http.js",
 	"scripts": {
