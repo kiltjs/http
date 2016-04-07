@@ -7,4 +7,8 @@ if (typeof define === 'function' && define.amd) {
 } else {
     // Browser globals
     global.$http = require('./http');
+
+    if( !global.$q ) {
+      global.$q = require('q-promise');
+    }
 }
