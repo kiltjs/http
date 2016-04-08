@@ -23,7 +23,7 @@
 	"homepage": "https://github.com/jstools/http",
 	"dependencies": {
 		"nitro-tools": "^0.1.11",
-		"q-promise": "^0.2.2"
+		"q-promise": "^0.2.4"
 	},
 	"devDependencies": {
 		"nitro": "^1.5.72"
