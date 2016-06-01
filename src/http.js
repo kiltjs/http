@@ -125,7 +125,7 @@ function http (url, config) {
           headers: headersGetter(request),
           xhr: request
         };
-        if( request.status >= 0 && request.status < 400 ) {
+        if( request.status >= 200 && request.status < 400 ) {
           resolve( response );
         } else {
           reject( response );
