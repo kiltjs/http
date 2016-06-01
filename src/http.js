@@ -115,6 +115,7 @@ function http (url, config) {
     addHeadersToRequest(request, config.headers || {} );
 
     request.config = config;
+    config.start = new Date().getTime();
 
     request.onreadystatechange = function(){
       if( request.readyState === 'complete' || request.readyState === 4 ) {
