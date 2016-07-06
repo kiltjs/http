@@ -229,4 +229,8 @@ http.base = function (url, baseConfig) {
   return based;
 };
 
+http.responseData = function (response) {
+  return response.data;
+};
+
 module.exports = http;
