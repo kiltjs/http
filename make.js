@@ -16,16 +16,12 @@ require('nitro')(function (nitro) {
   nitro.task('build', function () {
 
     nitro.load('src/http-browser.js')
-      .process('browserify', {
-        plugins: [nitro.require('babelify')]
-      })
+      .process('browserify')
       .process('uglify')
       .writeFile('dist/http.js');
 
     nitro.load('src/http-json-patch.js')
-      .process('browserify', {
-        plugins: [nitro.require('babelify')]
-      })
+      .process('browserify')
       .process('uglify')
       .writeFile('dist/http-json-patch.js');
 
