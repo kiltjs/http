@@ -72,6 +72,13 @@ function addHeadersToRequest (req, headers) {
   }
 }
 
+var defaultSettings = {};
+
+http.config = function (settings) {
+  _.merge(defaultSettings, settings);
+  return http;
+};
+
 function http (url, config) {
 
   if( config === undefined && typeof url === 'object' && url !== null ) {
@@ -82,7 +89,7 @@ function http (url, config) {
     config.url = url;
   }
 
-  config = _.copy(config);
+  config = _.merge(_.copy(defaultSettings),_.copy(config));
   config = resolveFunctions( config, [config], null );
   config.method = ( config.method || 'GET').toUpperCase();
 
@@ -115,6 +122,7 @@ function http (url, config) {
     addHeadersToRequest(request, config.headers || {} );
 
     request.config = config;
+    config.start = new Date().getTime();
 
     request.onreadystatechange = function(){
       if( request.readyState === 'complete' || request.readyState === 4 ) {
@@ -125,7 +133,7 @@ function http (url, config) {
           headers: headersGetter(request),
           xhr: request
         };
-        if( request.status >= 0 && request.status < 400 ) {
+        if( request.status >= 200 && request.status < 400 ) {
           resolve( response );
         } else {
           reject( response );
@@ -226,6 +234,10 @@ http.base = function (url, baseConfig) {
   });
 
   return based;
+};
+
+http.responseData = function (response) {
+  return response.data;
 };
 
 module.exports = http;
