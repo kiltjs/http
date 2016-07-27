@@ -72,6 +72,13 @@ function addHeadersToRequest (req, headers) {
   }
 }
 
+var defaultSettings = {};
+
+http.config = function (settings) {
+  _.merge(defaultSettings, settings);
+  return http;
+};
+
 function http (url, config) {
 
   if( config === undefined && typeof url === 'object' && url !== null ) {
@@ -82,7 +89,7 @@ function http (url, config) {
     config.url = url;
   }
 
-  config = _.copy(config);
+  config = _.merge(_.copy(defaultSettings),_.copy(config));
   config = resolveFunctions( config, [config], null );
   config.method = ( config.method || 'GET').toUpperCase();
 
