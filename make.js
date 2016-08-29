@@ -43,4 +43,8 @@ require('nitro')(function (nitro) {
     process.exit(0);
   });
 
+  nitro.task('gh-release', function () {
+    nitro.github.release( 'v' + require('../package').version, { branch: 'release' });
+  });
+
 }).run();
