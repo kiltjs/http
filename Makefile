@@ -33,6 +33,7 @@ release: auto.install test git.increaseVersion git.updateRelease build
 	@echo "\n\trelease version $(shell node make pkg:version)\n"
 	@git checkout master
 	npm publish
+	node make gh-release
 
 echo:
 	@echo "make options: test build dev live"
