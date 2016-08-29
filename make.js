@@ -44,7 +44,12 @@ require('nitro')(function (nitro) {
   });
 
   nitro.task('gh-release', function () {
-    nitro.github.release( 'v' + require('./package').version, { branch: 'release' });
+    nitro.github.release( 'v' + require('./package').version, {
+      branch: 'release',
+      attach: [
+        'dist/http.js'
+      ]
+    });
   });
 
 }).run();
