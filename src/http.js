@@ -2,7 +2,7 @@
 // factory http
 
 var $q = require('q-promise'),
-    _ = require('nitro-tools/lib/kit-extend');
+    _ = require('nitro-tools/extend');
 
 function resolveFunctions (o, args, thisArg) {
   for( var key in o ) {
