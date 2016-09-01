@@ -22,10 +22,10 @@
 	},
 	"homepage": "https://github.com/jstools/http",
 	"dependencies": {
-		"nitro-tools": "0.2.2",
-		"q-promise": "^0.3.2"
+		"nitro-tools": "0.2.3",
+		"q-promise": "^0.3.5"
 	},
 	"devDependencies": {
-		"nitro": "^1.9.6"
+		"nitro": "^1.9.10"
 	}
 }
