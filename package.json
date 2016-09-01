@@ -17,15 +17,15 @@
 	],
 	"author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
 	"license": "ISC",
-	"bugs": {
+		"bugs": {
 		"url": "https://github.com/jstools/http/issues"
 	},
 	"homepage": "https://github.com/jstools/http",
 	"dependencies": {
-		"nitro-tools": "0.2.3",
+		"nitro-tools": "0.2.4",
 		"q-promise": "^0.3.5"
 	},
 	"devDependencies": {
-		"nitro": "^1.9.10"
+		"nitro": "^1.9.11"
 	}
 }
