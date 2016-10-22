@@ -1,6 +1,6 @@
 {
 	"name": "http-browser",
-	"version": "0.1.28",
+	"version": "0.1.29",
 	"description": "http jstool example",
 	"main": "src/http.js",
 	"scripts": {
@@ -17,7 +17,7 @@
 	],
 	"author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
 	"license": "ISC",
-		"bugs": {
+	"bugs": {
 		"url": "https://github.com/jstools/http/issues"
 	},
 	"homepage": "https://github.com/jstools/http",
