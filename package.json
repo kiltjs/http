@@ -1,6 +1,6 @@
 {
 	"name": "http-browser",
-	"version": "0.1.30",
+	"version": "0.1.31",
 	"description": "http jstool example",
 	"main": "src/http.js",
 	"scripts": {
@@ -23,7 +23,7 @@
 	"homepage": "https://github.com/jstools/http",
 	"dependencies": {
 		"nitro-tools": "0.2.4",
-		"q-promise": "^0.3.5"
+		"parole": "^1.0.1"
 	},
 	"devDependencies": {
 		"nitro": "^1.9.11"

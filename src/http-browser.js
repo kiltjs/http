@@ -6,9 +6,9 @@ if (typeof define === 'function' && define.amd) {
     });
 } else {
     // Browser globals
-    global.$http = require('./http');
+    global.Parole = require('./http');
 
-    if( !global.$q ) {
-      global.$q = require('q-promise');
-    }
+    // if( !global.Parole ) {
+    //   global.Parole = require('parole');
+    // }
 }
