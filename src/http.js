@@ -1,7 +1,7 @@
 
 // factory http
 
-var $q = require('q-promise'),
+var Parole = require('parole'),
     _ = require('nitro-tools/extend');
 
 function resolveFunctions (o, args, thisArg) {
@@ -97,7 +97,7 @@ function http (url, config) {
     throw new Error('url should be a string');
   }
 
-  return $q(function (resolve, reject) {
+  return new Parole(function (resolve, reject) {
 
     var request = null;
 
