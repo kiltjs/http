@@ -1,10 +1,10 @@
-/* global require, ActiveXObject */
+/* global ActiveXObject */
 
 (function (root, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
     (root.$http = factory());
-})(this, (function (root, Promise, isBrowser, require) { return function () { 'use strict';
+})(this, (function (root, Promise, _isBrowser) { return function () { 'use strict';
 
   var isType = function (type, o) {
         return o ? typeof o === type : function (_o) {
@@ -18,8 +18,7 @@
         return o instanceof Array;
       },
       isString = isType('string'),
-      isFunction = isType('function'),
-      arrayShift = [].shift;
+      isFunction = isType('function');
 
   function mapObject (o, iteratee) {
     var result = {};
@@ -45,36 +44,36 @@
     return src;
   }
 
-  function merge () {
-    var dest = arrayShift.call(arguments),
-        src = arrayShift.call(arguments),
-        key;
-
-    while( src ) {
-
-      if( typeof dest !== typeof src ) {
-          dest = isArray(src) ? [] : ( isObject(src) ? {} : src );
-      }
-
-      if( isObject(src) ) {
-
-        for( key in src ) {
-          if( src[key] === undefined ) {
-            dest[key] = undefined;
-          } else if( isArray(dest[key]) ) {
-            [].push.apply(dest[key], src[key]);
-          } else if( isObject(dest[key]) ) {
-            dest[key] = merge(dest[key], src[key]);
-          } else {
-            dest[key] = src[key];
-          }
-        }
-      }
-      src = arrayShift.call(arguments);
-    }
-
-    return dest;
-  }
+  // function merge () {
+  //   var dest = arrayShift.call(arguments),
+  //       src = arrayShift.call(arguments),
+  //       key;
+  //
+  //   while( src ) {
+  //
+  //     if( typeof dest !== typeof src ) {
+  //         dest = isArray(src) ? [] : ( isObject(src) ? {} : src );
+  //     }
+  //
+  //     if( isObject(src) ) {
+  //
+  //       for( key in src ) {
+  //         if( src[key] === undefined ) {
+  //           dest[key] = undefined;
+  //         } else if( isArray(dest[key]) ) {
+  //           [].push.apply(dest[key], src[key]);
+  //         } else if( isObject(dest[key]) ) {
+  //           dest[key] = merge(dest[key], src[key]);
+  //         } else {
+  //           dest[key] = src[key];
+  //         }
+  //       }
+  //     }
+  //     src = arrayShift.call(arguments);
+  //   }
+  //
+  //   return dest;
+  // }
 
   function resolveFunctions (o, args, thisArg) {
     for( var key in o ) {
@@ -112,8 +111,11 @@
 
   function _getHeaders (request) {
     var headers = {};
-    request.getAllResponseHeaders().replace(/\s*([^\:]+)\s*\:\s*([^\;\n]+)/g, function (match, key, value) {
-        headers[headerToCamelCase(key)] = value.trim();
+    request.getAllResponseHeaders().split('\n').forEach(function (headerLine) {
+      var matched = headerLine.match(/(.*?):(.*)/);
+      if( matched ) {
+        headers[headerToCamelCase(matched[1])] = matched[2].trim();
+      }
     });
 
     return headers;
@@ -133,25 +135,37 @@
     }
   };
 
-  var makeRequest = root.fetch ? function (config, onSuccess, onError) {
-    return fetch( new Request(config.url, {
-      headers: new Headers(config.headers)
-    }) ).then(function (response) {
-      var headers = {},
-          iterator = response.headers.entries(),
-          entry = iterator.next();
-      while( entry ) {
-        headers[headerToCamelCase(entry.value[0])] = entry.value[1];
+  function getFetchResponse (response, format) {
+    var headers = {},
+        iterator = response.headers.entries(),
         entry = iterator.next();
-      }
 
-      return response[config.format || parseContentType(headers.contentType)]().then(function (data) {
-        response.data = data;
-        return response;
-      });
-      // onSuccess({ ok: true, headers: response.headers });
-    }, onError);
-  } : ( isBrowser ? function (config, resolve, reject) {
+    while( entry && !entry.done ) {
+      headers[headerToCamelCase(entry.value[0])] = entry.value[1];
+      entry = iterator.next();
+    }
+
+    return ( response[format || parseContentType(headers.contentType)] || response.text() ).then(function (data) {
+      return {
+        status: response.status,
+        statusText: response.statusText,
+        data: data,
+        headers: headers,
+      };
+    });
+  }
+
+  var makeRequest = root.fetch ? function (config, resolve, reject) {
+    var options = { headers: new Headers(config.headers) };
+    if( config.withCredentials ) options.credentials = 'include';
+    if( config.credentials ) options.credentials = config.credentials;
+
+    fetch(config.url, options).then(function (response) {
+      getFetchResponse(response, config.format).then(resolve);
+    }, function (response) {
+      getFetchResponse(response, config.format).then(reject);
+    });
+  } : function (config, resolve, reject) {
 
     var request = null;
 
@@ -163,16 +177,20 @@
     }
     if( request === null ) { throw 'Browser does not support HTTP Request'; }
 
-    request.onreadystatechange = function(){
+    if( config.withCredentials || config.credentials === 'include' ) request.withCredentials = true;
+
+    request.onreadystatechange = function() {
       if( request.readyState === 'complete' || request.readyState === 4 ) {
         var headers = headersGetter(request),
-            type = parseContentType(headers.contentType);
-        var response = {
-          config: config,
-          data: type === 'xml' ? request.responseXML : (parseData[type] ? parseData[type](request.responseText) : request.responseText),
-          status: request.status,
-          headers: headersGetter(request)
-        };
+            type = parseContentType(headers.contentType),
+            response = {
+              config: config,
+              status: request.status,
+              statusText: request.statusText,
+              headers: _getHeaders(request),
+              data: type === 'xml' ? request.responseXML : (parseData[type] ? parseData[type](request.responseText) : request.responseText),
+            };
+
         if( request.status >= 200 && request.status < 400 ) {
           resolve( response );
         } else {
@@ -181,7 +199,17 @@
       }
     };
 
-  } : require('./http-request') );
+    request.open(config.method, config.url, true);
+
+    if( config.headers ) {
+      for( var key in config.headers ) {
+        request.setRequestHeader( headerToTitleSlug(key), config.headers[key] );
+      }
+    }
+
+    request.send( typeof config.data === 'string' ? config.data : JSON.stringify(config.data) );
+
+  };
 
   function serializeParams (params) {
     var result = '';
@@ -196,7 +224,7 @@
 
     config = copy( isObject(url) ? url : config || {} );
     config.url = url === config ? config.url : url;
-    config.method = config.method.toUpperCase() || 'GET';
+    config.method = config.method && config.method.toUpperCase() || 'GET';
     config.timestamp = new Date().getTime();
 
     var headers = {};
@@ -235,4 +263,4 @@
 
   return http;
 
-}; })(this, this.Promise, typeof window !== 'undefined' && window === this, require) );
+}; })(this, this.Promise, typeof window !== 'undefined' && window === this) );
