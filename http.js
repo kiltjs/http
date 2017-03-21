@@ -1,10 +1,10 @@
 /* global ActiveXObject */
 
-(function (root, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (root.$http = factory());
-})(this, (function (root, Promise, _isBrowser) { return function () { 'use strict';
+(function (root, http) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = http :
+  typeof define === 'function' && define.amd ? define(function () { return http; }) :
+  (root.$http = http);
+})(this, (function (root, Promise, _isBrowser) { 'use strict';
 
   var isType = function (type, o) {
         return o ? typeof o === type : function (_o) {
@@ -18,62 +18,63 @@
         return o instanceof Array;
       },
       isString = isType('string'),
-      isFunction = isType('function');
+      isFunction = isType('function'),
+      httpDefaults = {};
 
-  function mapObject (o, iteratee) {
+  function mapObject (o, iteratee, thisArg) {
     var result = {};
     for( var key in o ) {
-      result[key] = iteratee(o[key], key);
+      result[key] = iteratee.call(thisArg, o[key], key);
     }
     return result;
   }
 
-  function copy (src) {
+  function _copy (src) {
     if( isArray(src) ) {
       return src.map(function (item) {
-        return copy(item);
+        return _copy(item);
       });
     }
 
     if( isObject(src) ) {
       return mapObject(src, function (item) {
-        return copy(item);
+        return _copy(item);
       });
     }
 
     return src;
   }
 
-  // function merge () {
-  //   var dest = arrayShift.call(arguments),
-  //       src = arrayShift.call(arguments),
-  //       key;
-  //
-  //   while( src ) {
-  //
-  //     if( typeof dest !== typeof src ) {
-  //         dest = isArray(src) ? [] : ( isObject(src) ? {} : src );
-  //     }
-  //
-  //     if( isObject(src) ) {
-  //
-  //       for( key in src ) {
-  //         if( src[key] === undefined ) {
-  //           dest[key] = undefined;
-  //         } else if( isArray(dest[key]) ) {
-  //           [].push.apply(dest[key], src[key]);
-  //         } else if( isObject(dest[key]) ) {
-  //           dest[key] = merge(dest[key], src[key]);
-  //         } else {
-  //           dest[key] = src[key];
-  //         }
-  //       }
-  //     }
-  //     src = arrayShift.call(arguments);
-  //   }
-  //
-  //   return dest;
-  // }
+  function _extend (dest, src) {
+    dest = dest || {};
+    for( var key in src ) dest[key] = src[key];
+    return dest;
+  }
+
+  function _mergeArrays(dest, src, concatArrays) {
+    if( !concatArrays ) return src.map(_copy);
+    [].push.apply(dest, src);
+    for( var i = 0, n = src.length ; i < n ; i++ ) {
+      dest.push( dest[i] ? _merge(dest[i], src[i]) : _copy(src[i]) );
+    }
+    return dest;
+  }
+
+  function _merge (dest, src, concatArrays) {
+    if( typeof dest !== typeof src ) {
+      if( isArray(src) ) dest = [];
+      else if( typeof src === 'object' ) dest = {};
+      else return src;
+    }
+    if( isArray(src) ) return _mergeArrays(dest, src, concatArrays);
+    if( typeof src === 'object' ) {
+      for( var key in src ) {
+        dest[key] = _merge(dest[key], src[key]);
+      }
+      return dest;
+    }
+    return src;
+  }
 
   function resolveFunctions (o, args, thisArg) {
     for( var key in o ) {
@@ -145,7 +146,9 @@
       entry = iterator.next();
     }
 
-    return ( response[format || parseContentType(headers.contentType)] || response.text() ).then(function (data) {
+    var type = parseContentType(headers.contentType);
+
+    return ( response[format || type] ? response[format || type]() : response.text() ).then(function (data) {
       return {
         status: response.status,
         statusText: response.statusText,
@@ -155,8 +158,8 @@
     });
   }
 
-  var makeRequest = root.fetch ? function (config, resolve, reject) {
-    var options = { headers: new Headers(config.headers) };
+  function fetchRequest (config, resolve, reject) {
+    var options = { headers: new Headers(config.headers), redirect: 'follow', credentials: 'same-origin' };
     if( config.withCredentials ) options.credentials = 'include';
     if( config.credentials ) options.credentials = config.credentials;
 
@@ -165,7 +168,9 @@
     }, function (response) {
       getFetchResponse(response, config.format).then(reject);
     });
-  } : function (config, resolve, reject) {
+  }
+
+  function xmlRequest (config, resolve, reject) {
 
     var request = null;
 
@@ -208,8 +213,9 @@
     }
 
     request.send( typeof config.data === 'string' ? config.data : JSON.stringify(config.data) );
+  }
 
-  };
+  var makeRequest = root.fetch ? fetchRequest : xmlRequest;
 
   function serializeParams (params) {
     var result = '';
@@ -220,12 +226,13 @@
     return result;
   }
 
-  function http (url, config) {
+  function http (url, config, data) {
 
-    config = copy( isObject(url) ? url : config || {} );
+    config = _copy( isObject(url) ? url : config || {} );
     config.url = url === config ? config.url : url;
     config.method = config.method && config.method.toUpperCase() || 'GET';
     config.timestamp = new Date().getTime();
+    config.data = data || config.data;
 
     var headers = {};
     config.headers = config.headers || {};
@@ -251,16 +258,73 @@
     return request;
   }
 
-  // function httpBase () {
-  //
-  // }
-
   http.responseData = function (response) {
     return response.data;
   };
 
+  function _plainOptions (optionsPile, method) {
+    optionsPile = optionsPile ? _copy(optionsPile) : [];
+
+    var plainOptions = _copy(httpDefaults),
+        options = optionsPile.shift();
+
+    plainOptions.method = method;
+
+    while( options ) {
+      _merge(plainOptions, options);
+      options = optionsPile.shift();
+    }
+
+    return plainOptions;
+  }
+
+  function useBasePath (_basePath) {
+    return function (path) {
+      return ( _basePath ? (_basePath.replace(/\/$/, '') + '/') : '' ) + path.replace(/^\//, '');
+    };
+  }
+
+  function httpBase (target, _basePath, optionsPile) {
+    var fullPath = useBasePath(_basePath),
+        requestMethod = function (method, hasData) {
+          return hasData ? function (path, data, options) {
+            return http( fullPath(path), _plainOptions( optionsPile.concat(options), method ), data );
+          } : function (path, options, data) {
+            return http( fullPath(path), _plainOptions( optionsPile.concat(options), method ), data );
+          };
+        };
+
+    target = target || requestMethod('get');
+
+    return _extend(target, {
+      head: requestMethod('head'),
+      get: requestMethod('get'),
+      post: requestMethod('post', true),
+      put: requestMethod('put', true),
+      patch: requestMethod('patch', true),
+      delete: requestMethod('delete'),
+      base: function (path, options) {
+        return httpBase( target, fullPath(path), optionsPile.concat(options || {}) );
+      },
+      config: function (options) {
+        if( options === undefined ) return _plainOptions( optionsPile );
+        _merge( optionsPile[optionsPile.length - 1], options );
+      },
+      responseData: http.responseData,
+    });
+  }
+
+  http.base = httpBase;
+  httpBase(http, null, [{}]);
+
   http.usePromise = function (P) { Promise = P; };
+  http.useRequest = function (request) {
+    if( request === 'fetch' ) makeRequest = fetchRequest;
+    else if( request === 'xml' ) makeRequest = xmlRequest;
+    else if( !isFunction(request) ) throw new Error('request should be `fetch`, `xml` or a function');
+    else makeRequest = request;
+  };
 
   return http;
 
-}; })(this, this.Promise, typeof window !== 'undefined' && window === this) );
+})(this, this.Promise, typeof window !== 'undefined' && window === this) );
