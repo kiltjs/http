@@ -105,7 +105,7 @@ function http (url, config, body) {
 
   config = _copy( isObject(url) ? url : config || {} );
   config.url = url === config ? config.url : url;
-  config.method = config.method && config.method.toUpperCase() || 'GET';
+  config.method = config.method ? config.method.toUpperCase() : 'GET';
   config.timestamp = new Date().getTime();
   config.body = body || config.body;
 
@@ -150,12 +150,12 @@ function _plainOptions (optionsPile, method) {
   var plainOptions = _copy(httpDefaults),
       options = optionsPile.shift();
 
-  plainOptions.method = method;
-
   while( options ) {
     _merge(plainOptions, options);
     options = optionsPile.shift();
   }
+
+  plainOptions.method = method;
 
   return plainOptions;
 }
