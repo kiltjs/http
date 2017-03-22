@@ -206,6 +206,8 @@ http.useRequest = function (request) {
   return http;
 };
 
+http._ = { copy: _copy, merge: _merge, extend: _extend };
+
 http.config = function (options) {
   _merge( httpDefaults, options );
   return http;
