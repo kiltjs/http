@@ -12,7 +12,7 @@ build: install
 
 github.release: export RELEASE_URL=$(shell curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${GITHUB_TOKEN}" \
 	-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}' \
-	-I -w '%{url_effective}' "https://api.github.com/repos/kiltjs/http/releases" )
+	-w '%{url_effective}' "https://api.github.com/repos/kiltjs/http/releases" )
 github.release:
 	@echo ${RELEASE_URL}
 	@true
