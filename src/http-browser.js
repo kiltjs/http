@@ -48,7 +48,7 @@ var useRequest = http.useRequest,
           if( config.credentials ) options.credentials = config.credentials;
 
           fetch(config.url, options).then(function (response) {
-            getFetchResponse(response, config).then(resolve);
+            getFetchResponse(response, config).then(response.ok ? resolve : reject);
           }, function (response) {
             getFetchResponse(response, config).then(reject);
           });
