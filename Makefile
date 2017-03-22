@@ -15,7 +15,7 @@ publish:
 	git push origin $(git_branch)
 	npm publish
 	curl -s -k -X POST -H "Content-Type: application/json" \
-		"https://api.github.com/repos/kiltjs/http/releases?access_token=$GITHUB_TOKEN" \
+		"https://api.github.com/repos/kiltjs/http/releases?access_token=$(shell echo $GITHUB_TOKEN)" \
 		-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}'
 
 master.increaseVersion:
