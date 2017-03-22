@@ -43,7 +43,11 @@ var useRequest = http.useRequest,
         }
 
         function fetchRequest (config, resolve, reject) {
-          var options = { headers: new Headers(config.headers), redirect: 'follow', credentials: 'same-origin' };
+          var options = {
+            method: config.method || 'GET',
+            headers: new Headers(config.headers),
+            redirect: 'follow', credentials: 'same-origin'
+          };
           if( config.withCredentials ) options.credentials = 'include';
           if( config.credentials ) options.credentials = config.credentials;
 
