@@ -11,12 +11,13 @@ build: install
 	$(shell npm bin)/rollup src/wrapper.js --format cjs --output wrapper.js
 
 github.release:
-	RELEASE_URL = $(shell curl -i -s -k -X POST -H "Content-Type: application/json" \
+	RELEASE_URL := $(shell @curl -i -s -k -X POST -H "Content-Type: application/json" \
 		"https://api.github.com/repos/kiltjs/http/releases?access_token=${GITHUB_TOKEN}" \
 		-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}' \
 		-o /dev/null -w '%{url_effective}' )
 
 	echo ${RELEASE_URL}
+	@true
 
 publish:
 	npm version patch
