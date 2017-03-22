@@ -11,19 +11,19 @@
 npm install http-rest --save
 ```
 ``` js
-	var $http = require('http-rest');
+var $http = require('http-rest');
 ```
 
 > Browser using node bundler
 
 ``` js
-	var $http = require('http-rest/browser');
+var $http = require('http-rest/browser');
 ```
 
 > Browser using bower
 
 ``` sh
-	bower install http-rest --save
+bower install http-rest --save
 ```
 
 ### Usage
