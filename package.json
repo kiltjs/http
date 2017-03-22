@@ -1,6 +1,6 @@
 {
   "name": "http-rest",
-  "version": "0.1.60",
+  "version": "0.1.61",
   "description": "http jstool example",
   "main": "http-node.js",
   "scripts": {
