@@ -13,6 +13,10 @@ build: install
 publish:
 	npm version patch
 	git push origin $(git_branch)
+	npm publish
+	curl -s -k -X POST -H "Content-Type: application/json" \
+		"https://api.github.com/repos/kiltjs/http/releases?access_token=$GITHUB_TOKEN" \
+		-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}'
 
 master.increaseVersion:
 	git checkout master
