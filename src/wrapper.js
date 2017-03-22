@@ -127,7 +127,7 @@ function http (url, config, body) {
   if( config.json && !config.body ) {
     headers['Content-Type'] = headers['Content-Type'] || 'application/json';
     config.body = JSON.stringify(config.json);
-  } else if( headers['Content-Type'] === 'application/json' && typeof config.body 'object' ) {
+  } else if( headers['Content-Type'] === 'application/json' && typeof config.body === 'object' ) {
     config.body = JSON.stringify(config.json);
   }
 
