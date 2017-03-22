@@ -16,7 +16,7 @@ github.release:
 	@echo ${RELEASE_URL}
 	@true
 
-publish:
+publish: build
 	npm version patch
 	git push origin $(git_branch)
 	cp package.json dist/package.json
