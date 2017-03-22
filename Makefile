@@ -13,7 +13,8 @@ build: install
 github.release:
 	curl -i -s -k -X POST -H "Content-Type: application/json" \
 		"https://api.github.com/repos/kiltjs/http/releases?access_token=${GITHUB_TOKEN}" \
-		-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}'
+		-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}' \
+		-o /dev/null -w '%{url_effective}'
 
 publish:
 	npm version patch
