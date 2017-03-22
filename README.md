@@ -1,11 +1,11 @@
-http-rest
-================
+
+# http-rest
 [![Bower version](https://badge.fury.io/bo/http-rest.svg)](http://badge.fury.io/bo/http-rest)
 [![npm version](https://badge.fury.io/js/http-rest.svg)](http://badge.fury.io/js/http-rest)
-Installation
-------------
 
-### Node
+### Installation
+
+> Node module
 
 ``` sh
 npm install http-rest --save
@@ -14,22 +14,19 @@ npm install http-rest --save
 	var $http = require('http-rest');
 ```
 
-### Browser
-
-> Using node
+> Browser using node bundler
 
 ``` js
 	var $http = require('http-rest/browser');
 ```
 
-> Using Bower
+> Browser using bower
 
 ``` sh
 	bower install http-rest --save
 ```
 
-Usage
------
+### Usage
 
 ``` js
 // GET .../items?prop1=value1
@@ -50,8 +47,7 @@ $http.patch('/items/:itemId', {
 $http.delete('/items/:itemId');
 ```
 
-Base configurations
--------------------------
+### Base configurations
 
 ``` js
 var httpItems = $http.base('items');
