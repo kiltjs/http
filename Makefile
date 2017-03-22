@@ -1,6 +1,6 @@
 # --- jstool-http
 
-git_branch = $(shell git rev-parse --abbrev-ref HEAD)
+git_branch := $(shell git rev-parse --abbrev-ref HEAD)
 
 install:
 	@npm install
@@ -10,13 +10,16 @@ build: install
 	$(shell npm bin)/rollup src/http-node.js --format cjs --output http-node.js
 	$(shell npm bin)/rollup src/wrapper.js --format cjs --output wrapper.js
 
+github.release:
+	curl -i -s -k -X POST -H "Content-Type: application/json" \
+		"https://api.github.com/repos/kiltjs/http/releases?access_token=${GITHUB_TOKEN}" \
+		-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}'
+
 publish:
 	npm version patch
 	git push origin $(git_branch)
 	npm publish
-	curl -s -k -X POST -H "Content-Type: application/json" \
-		"https://api.github.com/repos/kiltjs/http/releases?access_token=$(shell echo $GITHUB_TOKEN)" \
-		-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}'
+	make github.release
 
 master.increaseVersion:
 	git checkout master
