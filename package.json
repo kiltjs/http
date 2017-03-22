@@ -1,6 +1,6 @@
 {
   "name": "spears",
-  "version": "0.1.36",
+  "version": "0.1.37",
   "description": "http jstool example",
   "main": "http-node.js",
   "scripts": {
