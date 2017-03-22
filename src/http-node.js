@@ -2,6 +2,7 @@
 /*eslint no-console: 0*/
 
 var URL = require('url');
+var http = require('./wrapper');
 
 var RE_contentType = /([^\/]+)\/([^+]+\+)?([^;]*)/;
 function parseContentType(contentType) {
@@ -15,7 +16,7 @@ var parseData = {
   }
 };
 
-module.exports = function (config, resolve, reject) {
+http.useRequest(function (config, resolve, reject) {
 
   var url = URL.parse(config.url);
 
@@ -63,4 +64,6 @@ module.exports = function (config, resolve, reject) {
 
   req.end();
 
-};
+});
+
+module.exports = http;

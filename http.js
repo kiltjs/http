@@ -110,7 +110,7 @@
     return key;
   }
 
-  function _getHeaders (request) {
+  function _getXMLHeaders (request) {
     var headers = {};
     request.getAllResponseHeaders().split('\n').forEach(function (headerLine) {
       var matched = headerLine.match(/(.*?):(.*)/);
@@ -120,14 +120,6 @@
     });
 
     return headers;
-  }
-
-  function headersGetter (request) {
-    var headersCache;
-    return function () {
-      if( !headersCache ) headersCache = _getHeaders(request);
-      return headersCache;
-    };
   }
 
   var parseData = {
@@ -186,13 +178,14 @@
 
     request.onreadystatechange = function() {
       if( request.readyState === 'complete' || request.readyState === 4 ) {
-        var headers = headersGetter(request),
-            type = parseContentType(headers.contentType),
+        // var type = parseContentType( request.getResponseHeader('Content-Type') ),
+        var headers = _getXMLHeaders(request),
+            type = parseContentType( headers.contentType ),
             response = {
               config: config,
               status: request.status,
               statusText: request.statusText,
-              headers: _getHeaders(request),
+              headers: headers,
               data: type === 'xml' ? request.responseXML : (parseData[type] ? parseData[type](request.responseText) : request.responseText),
             };
 
@@ -212,7 +205,7 @@
       }
     }
 
-    request.send( typeof config.data === 'string' ? config.data : JSON.stringify(config.data) );
+    request.send( config.body );
   }
 
   var makeRequest = root.fetch ? fetchRequest : xmlRequest;
@@ -247,6 +240,11 @@
 
     if( config.params ) {
       config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serializeParams( config.params );
+    }
+
+    if( config.json && !config.body ) {
+      headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+      config.body = JSON.stringify(config.json);
     }
 
     var request = new Promise(function (resolve, reject) {

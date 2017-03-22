@@ -1,5 +1,3 @@
 /node_modules
 /npm-debug.log
 /dist
-/http-node.js
-/wrapper.js

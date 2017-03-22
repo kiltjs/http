@@ -1,16 +1,12 @@
 # --- jstool-http
 
-auto.install:
-	@node auto-install
+install:
+	@npm install
 
-test: auto.install
-	@node make lint
-
-build: auto.install
-	@node make build
-
-dev: auto.install
-	@node make dev
+build: install
+	$(shell npm bin)/rollup src/browser.js --format umd --output dist/browser.js -n \$http
+	$(shell npm bin)/rollup src/http-node.js --format cjs --output http-node.js
+	$(shell npm bin)/rollup src/wrapper.js --format cjs --output wrapper.js
 
 master.increaseVersion:
 	git checkout master
