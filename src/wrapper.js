@@ -162,7 +162,7 @@ function _plainOptions (optionsPile, method) {
 
 function useBasePath (_basePath) {
   return function (path) {
-    return ( _basePath ? (_basePath.replace(/\/$/, '') + '/') : '' ) + path.replace(/^\//, '');
+    return ( _basePath ? (_basePath.replace(/\/$/, '') + '/') : '' ) + ( path ? path.replace(/^\//, '') : '' );
   };
 }
 

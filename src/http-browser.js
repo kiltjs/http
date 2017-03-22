@@ -17,7 +17,7 @@ function headerToCamelCase(text) {
 
 http.useRequest( (window.fetch ? function () {
 
-  function getFetchResponse (response, format) {
+  function getFetchResponse (response, config) {
     var headers = {},
         iterator = response.headers.entries(),
         entry = iterator.next();
@@ -29,8 +29,9 @@ http.useRequest( (window.fetch ? function () {
 
     var type = parseContentType(headers.contentType);
 
-    return ( response[format || type] ? response[format || type]() : response.text() ).then(function (data) {
+    return ( response[config.format || type] ? response[config.format || type]() : response.text() ).then(function (data) {
       return {
+        config: config,
         status: response.status,
         statusText: response.statusText,
         data: data,
@@ -45,9 +46,9 @@ http.useRequest( (window.fetch ? function () {
     if( config.credentials ) options.credentials = config.credentials;
 
     fetch(config.url, options).then(function (response) {
-      getFetchResponse(response, config.format).then(resolve);
+      getFetchResponse(response, config).then(resolve);
     }, function (response) {
-      getFetchResponse(response, config.format).then(reject);
+      getFetchResponse(response, config).then(reject);
     });
   }
 
