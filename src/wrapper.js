@@ -101,13 +101,13 @@ function serializeParams (params) {
   return result;
 }
 
-function http (url, config, data) {
+function http (url, config, body) {
 
   config = _copy( isObject(url) ? url : config || {} );
   config.url = url === config ? config.url : url;
   config.method = config.method && config.method.toUpperCase() || 'GET';
   config.timestamp = new Date().getTime();
-  config.data = data || config.data;
+  config.body = body || config.body;
 
   var headers = {};
   config.headers = config.headers || {};
@@ -126,6 +126,8 @@ function http (url, config, data) {
 
   if( config.json && !config.body ) {
     headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+    config.body = JSON.stringify(config.json);
+  } else if( headers['Content-Type'] === 'application/json' && typeof config.body 'object' ) {
     config.body = JSON.stringify(config.json);
   }
 

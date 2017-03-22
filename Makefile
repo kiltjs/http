@@ -6,9 +6,8 @@ install:
 	@npm install
 
 build: install
-	$(shell npm bin)/rollup src/browser.js --format umd --output dist/browser.js -n \$http
-	$(shell npm bin)/rollup src/http-node.js --format cjs --output http-node.js
-	$(shell npm bin)/rollup src/wrapper.js --format cjs --output wrapper.js
+	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.js -n \$http
+	$(shell npm bin)/rollup src/http-node.js --format cjs --output dist/http-node.js
 
 github.release: export RELEASE_URL=$(shell curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${GITHUB_TOKEN}" \
 	-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}' \
@@ -20,7 +19,10 @@ github.release:
 publish:
 	npm version patch
 	git push origin $(git_branch)
-	npm publish
+	cp package.json dist/package.json
+	cp LICENSE dist/LICENSE
+	cp README.md dist/README.md
+	cd dist && npm publish
 	make github.release
 
 master.increaseVersion:
