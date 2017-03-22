@@ -1,5 +1,5 @@
 {
-  "name": "http-browser",
+  "name": "spears",
   "version": "0.1.32",
   "description": "http jstool example",
   "main": "http-node.js",

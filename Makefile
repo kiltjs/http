@@ -1,5 +1,7 @@
 # --- jstool-http
 
+git_branch = git rev-parse --abbrev-ref HEAD
+
 install:
 	@npm install
 
@@ -7,6 +9,10 @@ build: install
 	$(shell npm bin)/rollup src/browser.js --format umd --output dist/browser.js -n \$http
 	$(shell npm bin)/rollup src/http-node.js --format cjs --output http-node.js
 	$(shell npm bin)/rollup src/wrapper.js --format cjs --output wrapper.js
+
+publish:
+	npm version patch
+	git push origin $(git_branch)
 
 master.increaseVersion:
 	git checkout master
