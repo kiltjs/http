@@ -10,10 +10,7 @@ build: install
 	$(shell npm bin)/rollup src/http-node.js --format cjs --output http-node.js
 	$(shell npm bin)/rollup src/wrapper.js --format cjs --output wrapper.js
 
-github.release: export RELEASE_URL=$(shell curl -I -k -X POST -H "Content-Type: application/json" \
-	"https://api.github.com/repos/kiltjs/http/releases?access_token=${GITHUB_TOKEN}" \
-	-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}' \
-	-o /dev/null -w '%{url_effective}' )
+github.release: export RELEASE_URL=$(shell curl -I -X POST -H "Content-Type: application/json" "https://api.github.com/repos/kiltjs/http/releases?access_token=${GITHUB_TOKEN}" -d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}' -o /dev/null -w '%{url_effective}' )
 github.release:
 	echo ${RELEASE_URL}
 	@true
