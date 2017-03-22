@@ -1,6 +1,6 @@
 # --- jstool-http
 
-git_branch = git rev-parse --abbrev-ref HEAD
+git_branch = $(shell git rev-parse --abbrev-ref HEAD)
 
 install:
 	@npm install
