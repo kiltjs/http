@@ -12,8 +12,8 @@
   },
   "keywords": [
     "javascript",
-    "jstools",
-    "demo"
+    "http",
+    "fetch"
   ],
   "author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
   "license": "ISC",

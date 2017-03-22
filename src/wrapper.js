@@ -129,6 +129,11 @@ function http (url, config, body) {
     config.body = JSON.stringify(config.json);
   } else if( headers['Content-Type'] === 'application/json' && typeof config.body === 'object' ) {
     config.body = JSON.stringify(config.json);
+  } else if( typeof config.body === 'object' &&
+      !Blob.prototype.isPrototypeOf(config.body) &&
+      !FormData.prototype.isPrototypeOf(config.body) ) {
+    config.body = JSON.stringify(config.body);
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
   }
 
   var request = new Promise(function (resolve, reject) {
