@@ -6,11 +6,11 @@ install:
 	@npm install
 
 build: install
-	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.js -n \$http
+	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.js -n $http
 	$(shell npm bin)/rollup src/http-node.js --format cjs --output dist/http-node.js
 
 github.release: export RELEASE_URL=$(shell curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-	-d '{"tag_name": "v$(shell npm view spears version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view spears version)", "body": "", "draft": false, "prerelease": false}' \
+	-d '{"tag_name": "v$(shell npm view http-rest version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view http-rest version)", "body": "", "draft": false, "prerelease": false}' \
 	-w '%{url_effective}' "https://api.github.com/repos/kiltjs/http/releases" )
 github.release:
 	@echo ${RELEASE_URL}

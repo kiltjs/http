@@ -199,10 +199,16 @@ function httpBase (target, _basePath, optionsPile) {
 http.base = httpBase;
 httpBase(http, null, [{}]);
 
-http.usePromise = function (P) { Promise = P; };
+http.usePromise = function (P) { Promise = P; return http; };
 http.useRequest = function (request) {
   if( !isFunction(request) ) throw new Error('request should be a function');
   else makeRequest = request;
+  return http;
+};
+
+http.config = function (options) {
+  _merge( httpDefaults, options );
+  return http;
 };
 
 export default http;
