@@ -2,7 +2,7 @@
   "name": "http-rest",
   "version": "0.1.56",
   "description": "http jstool example",
-  "main": "dist/http-node.js",
+  "main": "http-node.js",
   "scripts": {
     "test": "grunt test"
   },
