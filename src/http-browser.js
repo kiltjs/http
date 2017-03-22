@@ -43,7 +43,7 @@ var useRequest = http.useRequest,
         }
 
         function fetchRequest (config, resolve, reject) {
-          fetch(config.url, http._.copy({
+          fetch(config.url, http._.extend( http._.copy(config) , {
             headers: new Headers(config.headers), redirect: 'follow',
             credentials: config.credentials || (config.withCredentials ? 'include' : 'same-origin'),
           }) ).then(function (response) {
