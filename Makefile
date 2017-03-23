@@ -7,8 +7,9 @@ install:
 
 build: install
 	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.js -n $http
-	$(shell npm bin)/rollup src/http-node.js --format cjs --output dist/http-node.js
-	cp src/wrapper.js dist/wrapper.js
+	$(shell npm bin)/rollup src/http-fetch.js --format umd --output dist/fetch.js -n $http
+	$(shell npm bin)/rollup src/wrapper.js --format cjs --output dist/wrapper.js
+	cp src/http-node.js dist/http-node.js
 
 github.release: export RELEASE_URL=$(shell curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${GITHUB_TOKEN}" \
 	-d '{"tag_name": "v$(shell npm view http-rest version)", "target_commitish": "$(git_branch)", "name": "v$(shell npm view http-rest version)", "body": "", "draft": false, "prerelease": false}' \

@@ -18,6 +18,9 @@ var $http = require('http-rest');
 
 ``` js
 var $http = require('http-rest/browser');
+
+// if you want to use fetch API when present
+var $http = require('http-rest/fetch');
 ```
 
 > Browser using bower
@@ -25,6 +28,18 @@ var $http = require('http-rest/browser');
 ``` sh
 bower install http-rest --save
 ```
+
+``` js
+// if you want to use fetch API when present (in bower.json)
+// ...
+"overrides": {
+	"http-rest": {
+		"main": "dist/fetch.js"
+	}
+},
+// ...
+```
+
 
 ### Usage
 

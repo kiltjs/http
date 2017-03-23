@@ -1,109 +1,13 @@
 
-var isType = function (type, o) {
-      return o ? typeof o === type : function (_o) {
-        return typeof _o === type;
-      };
-    },
-    isObject = function (o) {
-      return o !== null && typeof o === 'object';
-    },
-    isArray = Array.isArray || function (o) {
-      return o instanceof Array;
-    },
-    isString = isType('string'),
-    isFunction = isType('function'),
-    httpDefaults = {},
+import {copy, extend, merge, isObject, isString, isFunction, headerToTitleSlug, serializeParams, resolveFunctions} from './utils';
+
+var httpDefaults = {},
     makeRequest = function () {},
-    Promise = function () {};
-
-function mapObject (o, iteratee, thisArg) {
-  var result = {};
-  for( var key in o ) {
-    result[key] = iteratee.call(thisArg, o[key], key);
-  }
-  return result;
-}
-
-function _copy (src) {
-  if( isArray(src) ) {
-    return src.map(function (item) {
-      return _copy(item);
-    });
-  }
-
-  if( isObject(src) ) {
-    return mapObject(src, function (item) {
-      return _copy(item);
-    });
-  }
-
-  return src;
-}
-
-function _extend (dest, src) {
-  dest = dest || {};
-  for( var key in src ) dest[key] = src[key];
-  return dest;
-}
-
-function _mergeArrays(dest, src, concatArrays) {
-  if( !concatArrays ) return src.map(_copy);
-  [].push.apply(dest, src);
-  for( var i = 0, n = src.length ; i < n ; i++ ) {
-    dest.push( dest[i] ? _merge(dest[i], src[i]) : _copy(src[i]) );
-  }
-  return dest;
-}
-
-function _merge (dest, src, concatArrays) {
-  if( typeof dest !== typeof src ) {
-    if( isArray(src) ) dest = [];
-    else if( typeof src === 'object' ) dest = {};
-    else return src;
-  }
-  if( isArray(src) ) return _mergeArrays(dest, src, concatArrays);
-  if( typeof src === 'object' ) {
-    for( var key in src ) {
-      dest[key] = _merge(dest[key], src[key]);
-    }
-    return dest;
-  }
-  return src;
-}
-
-function resolveFunctions (o, args, thisArg) {
-  for( var key in o ) {
-    if( isFunction(o[key]) ) {
-      o[key] = o[key].apply(thisArg, args || []);
-    } else if( isObject(o[key]) ) {
-      o[key] = resolveFunctions(o[key], args, thisArg);
-    }
-  }
-  return o;
-}
-
-function headerToTitleSlug(text) {
-  // console.log('headerToTitleSlug', text);
-  var key = text.replace(/([a-z])([A-Z])/g, function (match, lower, upper) {
-      return lower + '-' + upper;
-  });
-  key = key[0].toUpperCase() + key.substr(1);
-
-  return key;
-}
-
-function serializeParams (params) {
-  var result = '';
-
-  for( var param in params ) {
-    result += ( result ? '&' : '' ) + param + '=' + encodeURIComponent(params[param]);
-  }
-  return result;
-}
+    Parole = typeof Promise !== 'undefined' ? Promise : function () {};
 
 function http (url, config, body) {
 
-  config = _copy( isObject(url) ? url : config || {} );
+  config = copy( isObject(url) ? url : config || {} );
   config.url = url === config ? config.url : url;
   config.method = config.method ? config.method.toUpperCase() : 'GET';
   config.timestamp = new Date().getTime();
@@ -136,7 +40,7 @@ function http (url, config, body) {
     headers['Content-Type'] = headers['Content-Type'] || 'application/json';
   }
 
-  var request = new Promise(function (resolve, reject) {
+  var request = new Parole(function (resolve, reject) {
     makeRequest(config, resolve, reject);
   });
 
@@ -150,13 +54,13 @@ http.responseData = function (response) {
 };
 
 function _plainOptions (optionsPile, method) {
-  optionsPile = optionsPile ? _copy(optionsPile) : [];
+  optionsPile = optionsPile ? copy(optionsPile) : [];
 
-  var plainOptions = _copy(httpDefaults),
+  var plainOptions = copy(httpDefaults),
       options = optionsPile.shift();
 
   while( options ) {
-    _merge(plainOptions, options);
+    merge(plainOptions, options);
     options = optionsPile.shift();
   }
 
@@ -183,7 +87,7 @@ function httpBase (target, _basePath, optionsPile) {
 
   target = target || requestMethod('get');
 
-  return _extend(target, {
+  return extend(target, {
     head: requestMethod('head'),
     get: requestMethod('get'),
     post: requestMethod('post', true),
@@ -195,7 +99,7 @@ function httpBase (target, _basePath, optionsPile) {
     },
     config: function (options) {
       if( options === undefined ) return _plainOptions( optionsPile );
-      _merge( optionsPile[optionsPile.length - 1], options );
+      merge( optionsPile[optionsPile.length - 1], options );
     },
     responseData: http.responseData,
   });
@@ -204,17 +108,15 @@ function httpBase (target, _basePath, optionsPile) {
 http.base = httpBase;
 httpBase(http, null, [{}]);
 
-http.usePromise = function (P) { Promise = P; return http; };
+http.usePromise = function (P) { Parole = P; return http; };
 http.useRequest = function (request) {
   if( !isFunction(request) ) throw new Error('request should be a function');
   else makeRequest = request;
   return http;
 };
 
-http._ = { copy: _copy, merge: _merge, extend: _extend };
-
 http.config = function (options) {
-  _merge( httpDefaults, options );
+  merge( httpDefaults, options );
   return http;
 };
 
