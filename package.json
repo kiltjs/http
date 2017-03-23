@@ -1,31 +1,28 @@
 {
-	"name": "http-browser",
-	"version": "0.1.31",
-	"description": "http jstool example",
-	"main": "src/http.js",
-	"scripts": {
-		"test": "grunt test"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/jstools/http.git"
-	},
-	"keywords": [
-		"javascript",
-		"jstools",
-		"demo"
-	],
-	"author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
-	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/jstools/http/issues"
-	},
-	"homepage": "https://github.com/jstools/http",
-	"dependencies": {
-		"nitro-tools": "0.2.4",
-		"parole": "^1.0.1"
-	},
-	"devDependencies": {
-		"nitro": "^1.9.11"
-	}
+  "name": "http-rest",
+  "version": "0.1.68",
+  "description": "http jstool example",
+  "main": "http-node.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiltjs/http-rest.git"
+  },
+  "keywords": [
+    "javascript",
+    "http",
+    "fetch"
+  ],
+  "author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kiltjs/http-rest/issues"
+  },
+  "homepage": "https://github.com/kiltjs/http-rest",
+  "dependencies": {},
+  "devDependencies": {
+    "rollup": "^0.41.6"
+  }
 }

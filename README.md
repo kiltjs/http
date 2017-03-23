@@ -1,62 +1,77 @@
-http-browser
-================
-[![Bower version](https://badge.fury.io/bo/http-browser.svg)](http://badge.fury.io/bo/http-browser)
-[![npm version](https://badge.fury.io/js/http-browser.svg)](http://badge.fury.io/js/http-browser)
-Installation
-------------
-```.sh
-npm install http-browser --save
-```
-or
-```.sh
-bower install http-browser --save
-```
 
-Usage
------
+# http-rest
+[![Bower version](https://badge.fury.io/bo/http-rest.svg)](http://badge.fury.io/bo/http-rest)
+[![npm version](https://badge.fury.io/js/http-rest.svg)](http://badge.fury.io/js/http-rest)
+
+### Installation
+
+> Node module
+
+``` sh
+npm install http-rest --save
+```
 ``` js
-$http.get('/items.json', { prop1: 'value1' });
-// GET .../items.json?prop1=value1
-
-$http.post('/items.json', {
-	prop1: 'value1'
-});
-
-$http.put('/items.json', {
-	prop1: 'another value'
-});
-
-$http.delete('/items.json');
-
-$http.patch('/items.json', {
-	op: 'add', path: '/prop1', value: 'one more value'
-});
-
-$http.patch('/items.json')
-	.remove('/prop1')
-	.add('/list/-', { subprop: 'sample value' })
-	.submit();
+var $http = require('http-rest');
 ```
 
-Cached URL
-----------
-``` js
-var httpItems = $http('items.json');
+> Browser using node bundler
 
-httpItems.get({ prop1: 'value1' });
+``` js
+var $http = require('http-rest/browser');
+
+// if you want to use fetch API when present
+var $http = require('http-rest/fetch');
+```
+
+> Browser using bower
+
+``` sh
+bower install http-rest --save
+```
+
+``` js
+// if you want to use fetch API when present (in bower.json)
+// ...
+"overrides": {
+	"http-rest": {
+		"main": "dist/fetch.js"
+	}
+},
+// ...
+```
+
+
+### Usage
+
+``` js
+// GET .../items?prop1=value1
+$http.get('/items', { params: { prop1: value1 } });
+
+$http.post('/items', {
+	sample: 'payload'
+});
+
+$http.put('/items/:itemId', {
+	sample: 'payload'
+});
+
+$http.patch('/items/:itemId', {
+	sample: 'payload'
+});
+
+$http.delete('/items/:itemId');
+```
+
+### Base configurations
+
+``` js
+var httpItems = $http.base('items');
 
 httpItems.post({ prop1: 'value1' });
 
-httpItems.put({	prop1: 'another value' });
+httpItems.get(itemId);
 
-httpItems.delete();
+httpItems.put(itemId, {	prop1: 'another value' });
 
-httpItems.patch({
-	op: 'add', path: '/prop1', value: 'one more value'
-});
-
-httpItems.patch()
-	.remove('/prop1')
-	.add('/list/-', { subprop: 'sample value' })
-	.submit();
+httpItems.delete(itemId);
 ```
