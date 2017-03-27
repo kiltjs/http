@@ -24,12 +24,12 @@ github.release:
 
 publish: build
 	npm version patch
-	git push origin $(git_branch)
 	cp package.json dist/package.json
 	cp LICENSE dist/LICENSE
 	cp README.md dist/README.md
+	git add dist -f
+	git push origin $(git_branch)
 	cd dist && npm publish
-	git subtree push --prefix dist origin build
 	make github.release
 
 echo:
