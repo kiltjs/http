@@ -1,0 +1,28 @@
+{
+  "name": "http-rest",
+  "version": "0.1.71",
+  "description": "http jstool example",
+  "main": "http-node.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kiltjs/http-rest.git"
+  },
+  "keywords": [
+    "javascript",
+    "http",
+    "fetch"
+  ],
+  "author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kiltjs/http-rest/issues"
+  },
+  "homepage": "https://github.com/kiltjs/http-rest",
+  "dependencies": {},
+  "devDependencies": {
+    "rollup": "^0.41.6"
+  }
+}
