@@ -29,7 +29,7 @@ publish: build
 	cp LICENSE dist/LICENSE
 	cp README.md dist/README.md
 	cd dist && npm publish
-	git subtree push --prefix public origin gh-pages
+	git subtree push --prefix dist origin build
 	make github.release
 
 echo:
