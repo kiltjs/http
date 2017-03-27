@@ -7,8 +7,8 @@ install:
 	@npm install
 
 build: install
-	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.js -n $http
-	$(shell npm bin)/rollup src/http-fetch.js --format umd --output dist/fetch.js -n $http
+	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.js -n \$$http
+	$(shell npm bin)/rollup src/http-fetch.js --format umd --output dist/fetch.js -n \$$http
 	$(shell npm bin)/rollup src/wrapper.js --format cjs --output dist/wrapper.js
 	cp src/http-node.js dist/http-node.js
 
