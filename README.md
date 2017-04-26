@@ -1,7 +1,5 @@
 
 # http-rest
-[![Bower version](https://badge.fury.io/bo/http-rest.svg)](http://badge.fury.io/bo/http-rest)
-[![npm version](https://badge.fury.io/js/http-rest.svg)](http://badge.fury.io/js/http-rest)
 
 [![npm](https://img.shields.io/npm/v/http-rest.svg)](https://www.npmjs.com/package/http-rest) [![bower](https://img.shields.io/bower/v/http-rest.svg)](http://bower.io/search/?q=http-rest)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
