@@ -16,7 +16,7 @@
     "fetch"
   ],
   "author": "Jesús Manuel Germade Castiñeiras <jesus@germade.es>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/kiltjs/http-rest/issues"
   },
