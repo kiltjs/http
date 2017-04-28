@@ -4,7 +4,7 @@
   "description": "http jstool example",
   "main": "http-node.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "make test"
   },
   "repository": {
     "type": "git",
