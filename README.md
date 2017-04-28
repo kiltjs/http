@@ -1,7 +1,7 @@
 
 # http-rest
 
-`http` wrapper for browser and node that allows config inheritance ( uses [fetch API](https://developer.mozilla.org/es/docs/Web/API/Fetch_API) when present )
+`ajax / http` wrapper for browser and node that allows config inheritance ( uses [fetch API](https://developer.mozilla.org/es/docs/Web/API/Fetch_API) when present )
 
 [![npm](https://img.shields.io/npm/v/http-rest.svg)](https://www.npmjs.com/package/http-rest) [![bower](https://img.shields.io/bower/v/http-rest.svg)](http://bower.io/search/?q=http-rest)
 [![Build Status](https://travis-ci.org/kiltjs/http-rest.svg?branch=master)](https://travis-ci.org/kiltjs/http-rest)
