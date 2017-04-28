@@ -23,6 +23,7 @@
   "homepage": "https://github.com/kiltjs/http-rest",
   "dependencies": {},
   "devDependencies": {
+    "eslint": "^3.19.0",
     "rollup": "^0.41.6"
   }
 }
