@@ -4,7 +4,7 @@
 var URL = require('url');
 var http = require('./wrapper');
 
-var RE_contentType = /([^\/]+)\/([^+]+\+)?([^;]*)/;
+var RE_contentType = /([^/]+)\/([^+]+\+)?([^;]*)/;
 function parseContentType(contentType) {
   var matches = contentType && contentType.match(RE_contentType);
   return matches ? matches[3] : 'text';

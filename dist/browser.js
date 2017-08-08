@@ -79,7 +79,7 @@ function merge (dest, src, concatArrays) {
 function resolveFunctions (o, args, thisArg) {
   for( var key in o ) {
     if( isFunction(o[key]) ) {
-      o[key] = o[key].apply(thisArg, args || []);
+      o[key] = o[key].apply(thisArg, args || [o]);
     } else if( isObject(o[key]) ) {
       o[key] = resolveFunctions(o[key], args, thisArg);
     }
@@ -113,7 +113,7 @@ function serializeParams (params) {
   return result;
 }
 
-var RE_contentType = /([^\/]+)\/([^+]+\+)?([^;]*)/;
+var RE_contentType = /([^/]+)\/([^+]+\+)?([^;]*)/;
 function parseContentType(contentType) {
   var matches = contentType && contentType.match(RE_contentType);
   return matches ? matches[3] : 'text';
