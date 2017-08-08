@@ -131,7 +131,7 @@ function http$1 (url, config, body) {
   config.timestamp = new Date().getTime();
   config.body = body || config.body;
 
-  var headers = {};
+  var headers = { 'Content-Type': 'application/json' };
   config.headers = config.headers || {};
   for( var key in config.headers ) {
     headers[ headerToTitleSlug(key) ] = config.headers[key];
@@ -157,6 +157,8 @@ function http$1 (url, config, body) {
     config.body = JSON.stringify(config.body);
     headers['Content-Type'] = headers['Content-Type'] || 'application/json';
   }
+
+  headers['Accept'] = headers['Accept'] || headers['Content-Type'] || 'application/json';
 
   var request = new Parole(function (resolve, reject) {
     makeRequest(config, resolve, reject);
