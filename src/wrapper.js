@@ -1,5 +1,5 @@
 
-import {copy, extend, merge, isObject, isString, isFunction, headerToTitleSlug, serializeParams, resolveFunctions} from './utils';
+import {copy, extend, merge, isObject, isString, isFunction, headersToTitleSlug, serializeParams, resolveFunctions} from './utils';
 
 var httpDefaults = {},
     makeRequest = function () {},
@@ -13,14 +13,6 @@ function http (url, config, body) {
   config.timestamp = new Date().getTime();
   config.body = body || config.body;
 
-  var headers = copy(config.headers || {});
-  if( !headers['Content-Type'] ) headers['Content-Type'] || 'application/json';
-
-  for( var key in config.headers ) {
-    headers[ headerToTitleSlug(key) ] = config.headers[key];
-  }
-  config.headers = headers;
-
   if( !isString(config.url) ) throw new Error('url must be a string');
 
   config = resolveFunctions(config);
@@ -29,19 +21,23 @@ function http (url, config, body) {
     config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serializeParams( config.params );
   }
 
+  var headers = copy(config.headers || {});
+
   if( config.json && !config.body ) {
-    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+    headers.contentType = headers.contentType || 'application/json';
     config.body = JSON.stringify(config.json);
-  } else if( headers['Content-Type'] === 'application/json' && typeof config.body === 'object' ) {
+  } else if( headers.contentType === 'application/json' && typeof config.body === 'object' ) {
     config.body = JSON.stringify(config.json);
   } else if( typeof config.body === 'object' &&
       !Blob.prototype.isPrototypeOf(config.body) &&
       !FormData.prototype.isPrototypeOf(config.body) ) {
     config.body = JSON.stringify(config.body);
-    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
-  }
+    headers.contentType = headers.contentType || 'application/json';
+  } else if( !headers.contentType ) headers.contentType || 'application/json';
 
-  headers['Accept'] = headers['Accept'] || headers['Content-Type'] || 'application/json';
+  headers.accept = headers.accept || headers.contentType || 'application/json';
+
+  config.headers = headersToTitleSlug(headers);
 
   var request = new Parole(function (resolve, reject) {
     makeRequest(config, resolve, reject);

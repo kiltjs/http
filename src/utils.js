@@ -92,11 +92,31 @@ export function headerToTitleSlug(text) {
   return key;
 }
 
+export function headersToTitleSlug(headers) {
+  var _headers = {};
+
+  for( var key in headers ) {
+    _headers[ headerToTitleSlug(key) ] = headers[key];
+  }
+
+  return _headers;
+}
+
 export function headerToCamelCase(text) {
   var key = text[0].toLowerCase() + text.substr(1);
   return key.replace(/([a-z])-([a-zA-Z])/g, function (match, lower, upper) {
     return lower + upper.toUpperCase();
   });
+}
+
+export function headersToCamelCase(headers) {
+  var _headers = {};
+
+  for( var key in headers ) {
+    _headers[ headerToCamelCase(key) ] = headers[key];
+  }
+
+  return _headers;
 }
 
 export function serializeParams (params) {
