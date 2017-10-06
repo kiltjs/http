@@ -24,6 +24,7 @@ npm.publish:
 	cp LICENSE dist/LICENSE
 	cp README.md dist/README.md
 	git add dist -f
+	-git commit "updating dist"
 	git push origin $(git_branch)
 	cd dist && npm publish
 
