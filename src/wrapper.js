@@ -13,8 +13,9 @@ function http (url, config, body) {
   config.timestamp = new Date().getTime();
   config.body = body || config.body;
 
-  var headers = { 'Content-Type': 'application/json' };
-  config.headers = config.headers || {};
+  var headers = copy(config.headers || {});
+  if( !headers['Content-Type'] ) headers['Content-Type'] || 'application/json';
+
   for( var key in config.headers ) {
     headers[ headerToTitleSlug(key) ] = config.headers[key];
   }
