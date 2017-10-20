@@ -121,7 +121,6 @@ var makeRequest = function () {};
 var Parole = typeof Promise !== 'undefined' ? Promise : function () {};
 
 function http (url, config, body) {
-  if( url instanceof Function ) url = url(config);
 
   config = copy( isObject(url) ? url : config || {} );
   config.url = url === config ? config.url : url;
@@ -168,38 +167,38 @@ http.responseData = function (response) {
   return response.data;
 };
 
-function _plainOptions (optionsPile, method) {
-  optionsPile = optionsPile ? copy(optionsPile) : [];
+function _mergePaths (_basePath, path) {
+  return ( _basePath ? (_basePath.replace(/\/$/, '') + '/') : '' ) + ( path ? ( _basePath ? path.replace(/^\//, '') : path ) : '' );
+}
 
-  var plainOptions = copy(httpDefaults),
-      options = optionsPile.shift();
+function _plainOptions (_options_pile, method) {
+  var options_pile = _options_pile ? copy(_options_pile) : [];
+
+  var plain_options = copy(httpDefaults),
+      options = options_pile.shift();
 
   while( options ) {
-    merge(plainOptions, options);
-    options = optionsPile.shift();
+    merge(plain_options, options);
+    options = options_pile.shift();
   }
 
-  if(method) plainOptions.method = method;
+  if(method) plain_options.method = method;
 
-  return plainOptions;
+  plain_options.url = _options_pile.reduce(function (url, path) {
+    return url === null ? (path || null) : ( path ? _mergePaths(url, path) : url );
+  }, null);
+
+  return plain_options;
 }
 
-function useBasePath (_basePath) {
-  return function (path) {
-    return ( _basePath ? (_basePath.replace(/\/$/, '') + '/') : '' ) + ( path ? ( _basePath ? path.replace(/^\//, '') : path ) : '' );
-  };
-}
-
-function httpBase (target, _basePath, optionsPile) {
-  var getFullPath = _basePath instanceof Function ? function (path) {
-        var _options = _plainOptions( optionsPile );
-        return useBasePath( _basePath(_options) )(path instanceof Function ? path(_options) : path);
-      } : useBasePath(_basePath),
-      requestMethod = function (method, hasData) {
-        return hasData ? function (path, data, options) {
-          return http( getFullPath(path), _plainOptions( optionsPile.concat(options), method ), data );
-        } : function (path, options, data) {
-          return http( getFullPath(path), _plainOptions( optionsPile.concat(options), method ), data );
+function httpBase (target, options, options_pile) {
+  var requestMethod = function (method, hasData) {
+        return hasData ? function (path, data, _options) {
+          _options = _plainOptions( options_pile.concat( Object.create(_options) ), method );
+          return http( _options.url, _options, data );
+        } : function (path, _options, data) {
+          _options = _plainOptions( options_pile.concat( Object.create(_options) ), method );
+          return http( _options.url, _options, data );
         };
       };
 
@@ -212,12 +211,14 @@ function httpBase (target, _basePath, optionsPile) {
     put: requestMethod('put', true),
     patch: requestMethod('patch', true),
     delete: requestMethod('delete'),
-    base: function (path, options) {
-      return httpBase( target, getFullPath(path), optionsPile.concat(options || {}) );
+    base: function (url, _options) {
+      var options = _options ? Object.create(_options) :{};
+      options.url = url;
+      return httpBase( target, options, options_pile.concat(options) );
     },
-    config: function (options) {
-      if( options === undefined ) return _plainOptions( optionsPile );
-      merge( optionsPile[optionsPile.length - 1], options );
+    config: function (_options) {
+      if( options === undefined ) return _plainOptions( options_pile );
+      merge( options, _options );
     },
     responseData: http.responseData,
   });
