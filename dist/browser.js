@@ -136,6 +136,7 @@ var makeRequest = function () {};
 var Parole = typeof Promise !== 'undefined' ? Promise : function () {};
 
 function http$1 (url, config, body) {
+  if( url instanceof Function ) url = url(config);
 
   config = copy( isObject(url) ? url : config || {} );
   config.url = url === config ? config.url : url;
@@ -193,7 +194,7 @@ function _plainOptions (optionsPile, method) {
     options = optionsPile.shift();
   }
 
-  plainOptions.method = method;
+  if(method) plainOptions.method = method;
 
   return plainOptions;
 }
@@ -205,12 +206,15 @@ function useBasePath (_basePath) {
 }
 
 function httpBase (target, _basePath, optionsPile) {
-  var fullPath = useBasePath(_basePath),
+  var getFullPath = _basePath instanceof Function ? function (path) {
+        var _options = _plainOptions( optionsPile );
+        return useBasePath( _basePath(_options) )(path instanceof Function ? path(_options) : path);
+      } : useBasePath(_basePath),
       requestMethod = function (method, hasData) {
         return hasData ? function (path, data, options) {
-          return http$1( fullPath(path), _plainOptions( optionsPile.concat(options), method ), data );
+          return http$1( getFullPath(path), _plainOptions( optionsPile.concat(options), method ), data );
         } : function (path, options, data) {
-          return http$1( fullPath(path), _plainOptions( optionsPile.concat(options), method ), data );
+          return http$1( getFullPath(path), _plainOptions( optionsPile.concat(options), method ), data );
         };
       };
 
@@ -224,7 +228,7 @@ function httpBase (target, _basePath, optionsPile) {
     patch: requestMethod('patch', true),
     delete: requestMethod('delete'),
     base: function (path, options) {
-      return httpBase( target, fullPath(path), optionsPile.concat(options || {}) );
+      return httpBase( target, getFullPath(path), optionsPile.concat(options || {}) );
     },
     config: function (options) {
       if( options === undefined ) return _plainOptions( optionsPile );
