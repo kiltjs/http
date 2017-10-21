@@ -72,12 +72,12 @@ function merge (dest, src, concatArrays) {
   return src;
 }
 
-function resolveFunctions (o, args, thisArg) {
+function resolveFunctions (o, args, this_arg) {
   for( var key in o ) {
     if( isFunction(o[key]) ) {
-      o[key] = o[key].apply(thisArg, args || [o]);
+      o[key] = o[key].apply(this_arg, args);
     } else if( isObject(o[key]) ) {
-      o[key] = resolveFunctions(o[key], args, thisArg);
+      o[key] = resolveFunctions(o[key], args, this_arg);
     }
   }
   return o;
@@ -206,7 +206,7 @@ function http (url, _config, body) {
 
   if( !isString(config.url) ) throw new Error('url must be a string');
 
-  config = resolveFunctions(config);
+  config = resolveFunctions(config, [config]);
 
   if( config.params ) {
     config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serializeParams( config.params );
