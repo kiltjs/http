@@ -119,13 +119,17 @@ export function headersToCamelCase(headers) {
   return _headers;
 }
 
-export function serializeParams (params) {
-  var result = '';
+export function serializeParams (params, previous_levels) {
+  var results = [];
+  previous_levels = previous_levels ||[];
 
   for( var param in params ) {
-    result += ( result ? '&' : '' ) + param + '=' + encodeURIComponent(params[param]);
+    if( typeof params[param] === 'object' ) [].push.apply( results, serializeParams(params[param], previous_levels.concat(param) ) );
+    else results.push( previous_levels.concat(param).reduce(function (key, param) {
+      return key + ( key ? ('[' + param + ']') : param );
+    }, '') + '=' + encodeURIComponent(params[param]) );
   }
-  return result;
+  return results;
 }
 
 var RE_contentType = /([^/]+)\/([^+]+\+)?([^;]*)/;

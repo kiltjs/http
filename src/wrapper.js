@@ -44,7 +44,7 @@ function http (url, _config, body) {
   config = resolveFunctions(config, [config]);
 
   if( config.params ) {
-    config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serializeParams( config.params );
+    config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serializeParams( config.params ).join('&');
   }
 
   var headers = copy(config.headers || {});
