@@ -245,12 +245,19 @@ http.responseData = function (response) {
 
 function httpBase (target, options, options_pile) {
   var requestMethod = function (method, hasData) {
-        return hasData ? function (path, data, _options) {
+        return hasData ? function (url, data, _options) {
+          if( typeof url === 'object' ) { _options = data; data = url; url = null; }
+          _options = Object.create(_options || {});
+          if( url ) _options.url = url;
           _options = _plainOptions( _options ? options_pile.concat(_options) : options_pile, method );
           return http( _options.url, _options, data );
-        } : function (path, _options, data) {
+        } : function (url, _options, params) {
+          if( typeof url === 'object' ) { params = _options; _options = url; url = null; }
+          _options = Object.create(_options || {});
+          if( url ) _options.url = url;
+          if( params ) _options.params = params;
           _options = _plainOptions( _options ? options_pile.concat(_options) : options_pile, method );
-          return http( _options.url, _options, data );
+          return http( _options.url, _options );
         };
       };
 
