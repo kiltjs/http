@@ -131,11 +131,85 @@ function parseContentType(contentType) {
   return matches ? matches[3] : 'text';
 }
 
-var httpDefaults = {};
+
+var arrayPush = Array.prototype.push;
+var arraySlice = Array.prototype.slice;
+
+function _sanitizePath(path, i, last) {
+  if( i > 0 ) path = path.replace(/^\.*\//, '');
+  if( !last ) path = path.replace(/\/$/, '');
+  return path.split(/\/+/);
+}
+
+function _joinPaths (paths) {
+  var last = paths.length - 1;
+  return paths.reduce(function (result, path, i) {
+
+    if( path === '.' ) return result;
+    if( /^\//.test(path) ) return _sanitizePath(path, 0, i === last );
+
+    path = path.replace(/\.\.\//g, function () {
+      result = result.slice(0, -1);
+      return '';
+    }).replace(/\.\//, '');
+
+    arrayPush.apply( result, _sanitizePath(path, i, i === last) );
+
+    return result;
+
+  }, []).join('/');
+}
+
+function _unraise (paths) {
+  var result = [];
+
+  paths.forEach(function (path) {
+    if( !path ) return;
+
+    // https://jsperf.com/array-prototype-push-apply-vs-concat/17
+    if( path instanceof Array ) arrayPush.apply(result, _unraise(path) );
+    else if( typeof path === 'string' ) result.push(path);
+    else throw new Error('paths parts should be Array or String');
+  });
+
+  return result;
+}
+
+function joinPaths () {
+  return _joinPaths( _unraise(arraySlice.call(arguments)) );
+}
+
+var http_defaults = {};
 var makeRequest = function () {};
 var Parole = typeof Promise !== 'undefined' ? Promise : function () {};
 
-function http$1 (url, config, body) {
+function _plainOptions (_options_pile, method) {
+  var options_pile = _options_pile ? copy(_options_pile) : [];
+
+  var plain_options = {},
+      options = options_pile.shift();
+
+  while( options ) {
+    merge(plain_options, options);
+    options = options_pile.shift();
+  }
+
+  if(method) plain_options.method = method;
+
+  plain_options.url = joinPaths( _options_pile.reduce(function (paths, options) {
+    if( !options.url ) return paths;
+
+    if( options.url instanceof Function ) return paths.concat( options.url(plain_options) );
+
+    return paths.concat(options.url);
+  }, []) );
+
+  return plain_options;
+}
+
+function http$1 (url, _config, body) {
+
+  var config = _plainOptions([http_defaults, _config]);
 
   config = copy( isObject(url) ? url : config || {} );
   config.url = url === config ? config.url : url;
@@ -182,42 +256,53 @@ http$1.responseData = function (response) {
   return response.data;
 };
 
-function _mergePaths (_basePath, path) {
-  return ( _basePath ? (_basePath.replace(/\/$/, '') + '/') : '' ) + ( path ? ( _basePath ? path.replace(/^\//, '') : path ) : '' );
-}
+// function HttpBase ( options, options_pile ) {
+//   this.options = options || {};
+//   this.options_pile = (options_pile || []).concat(this.options);
+// }
+//
+// HttpBase.prototype.base = function (url, options) {
+//   if( typeof url === 'object' ) { options = url; url = null; }
+//   options = options ? Object.create(options) : {};
+//   if(url) options.url = url;
+//   return new HttpBase( options, this.options_pile );
+// };
+//
+// function _requestMethod (method, hasData) {
+//   return hasData ? function (path, data, _options) {
+//     _options = _plainOptions( this.options_pile.concat( Object.create(_options) ), method );
+//     return http( _options.url, _options, data );
+//   } : function (path, _options, data) {
+//     _options = _plainOptions( this.options_pile.concat( Object.create(_options) ), method );
+//     return http( _options.url, _options, data );
+//   };
+// }
+//
+// HttpBase.prototype.head = _requestMethod('head');
+// HttpBase.prototype.get = _requestMethod('get');
+// HttpBase.prototype.post = _requestMethod('post', true);
+// HttpBase.prototype.put = _requestMethod('put', true);
+// HttpBase.prototype.patch = _requestMethod('patch', true);
+// HttpBase.prototype.delete = _requestMethod('delete');
+//
+// HttpBase.prototype.config = function (_options) {
+//   if( _options === undefined ) return _plainOptions( [http_defaults].concat(this.options_pile) );
+//   merge( this.options, _options );
+// };
+//
+// HttpBase.prototype.responseData = http.responseData;
 
-function _plainOptions (_options_pile, method) {
-  var options_pile = _options_pile ? copy(_options_pile) : [];
-
-  var plain_options = copy(httpDefaults),
-      options = options_pile.shift();
-
-  while( options ) {
-    merge(plain_options, options);
-    options = options_pile.shift();
-  }
-
-  if(method) plain_options.method = method;
-
-  plain_options.url = _options_pile.reduce(function (url, path) {
-    return url === null ? (path || null) : ( path ? _mergePaths(url, path) : url );
-  }, null);
-
-  return plain_options;
-}
 
 function httpBase (target, options, options_pile) {
   var requestMethod = function (method, hasData) {
         return hasData ? function (path, data, _options) {
-          _options = _plainOptions( options_pile.concat( Object.create(_options) ), method );
+          _options = _plainOptions( options_pile.concat(_options), method );
           return http$1( _options.url, _options, data );
         } : function (path, _options, data) {
-          _options = _plainOptions( options_pile.concat( Object.create(_options) ), method );
+          _options = _plainOptions( options_pile.concat(_options), method );
           return http$1( _options.url, _options, data );
         };
       };
-
-  target = target || requestMethod('get');
 
   return extend(target, {
     head: requestMethod('head'),
@@ -229,10 +314,10 @@ function httpBase (target, options, options_pile) {
     base: function (url, _options) {
       var options = _options ? Object.create(_options) :{};
       options.url = url;
-      return httpBase( target, options, options_pile.concat(options) );
+      return httpBase( requestMethod('get'), options, options_pile.concat(options) );
     },
     config: function (_options) {
-      if( options === undefined ) return _plainOptions( options_pile );
+      if( options === undefined ) return _plainOptions( [http_defaults].concat(this.options_pile).concat(options) );
       merge( options, _options );
     },
     responseData: http$1.responseData,
@@ -240,7 +325,7 @@ function httpBase (target, options, options_pile) {
 }
 
 http$1.base = httpBase;
-httpBase(http$1, null, [{}]);
+httpBase(http$1, http_defaults, []);
 
 http$1.usePromise = function (P) { Parole = P; return http$1; };
 http$1.useRequest = function (request) {
@@ -250,7 +335,7 @@ http$1.useRequest = function (request) {
 };
 
 http$1.config = function (options) {
-  merge( httpDefaults, options );
+  merge( http_defaults, options );
   return http$1;
 };
 
