@@ -20,19 +20,25 @@ build: test
 	cp LICENSE dist/LICENSE
 	cp README.md dist/README.md
 
-npm.version: build
+npm.increaseVersion:
+	npm version patch --no-git-tag-version
+
+npm.pushVersion: npm.increaseVersion
+	git commit -a -n -m "v$(shell node -e "process.stdout.write(require('./package').version + '\n')")" 2> /dev/null; true
+	git push origin $(master_branch)
+
+git.tag: build
 	git pull --tags
-	npm version patch
 	git add dist -f --all
-	-git commit "updating dist"
+	-git commit -n -m "updating dist" 2> /dev/null; true
+	git tag -a v$(shell node -e "process.stdout.write(require('./package').version + '\n')") -m "v$(shell node -e "process.stdout.write(require('./package').version + '\n')")"
 	git push --tags
 	# git push origin $(git_branch)
 
-npm.publish: npm.version build
-	# -git commit "updating dist"
-	# git tag -a v$(shell node -e "process.stdout.write(require('./package').version + '\n')") -m "v$(shell node -e "process.stdout.write(require('./package').version + '\n')")"
-	# git reset --hard origin/$(git_branch)
+npm.publish: npm.pushVersion git.tag
 	cd dist && npm publish
+	git reset --hard origin/$(git_branch)
+	@git checkout $(git_branch)
 
 github.release: export PKG_NAME=$(shell node -e "console.log(require('./package.json').name);")
 github.release: export PKG_VERSION=$(shell node -e "console.log('v'+require('./package.json').version);")
