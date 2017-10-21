@@ -20,11 +20,13 @@ build: test
 	cp LICENSE dist/LICENSE
 	cp README.md dist/README.md
 
-npm.version:
+npm.version: build
 	git pull --tags
 	npm version patch
-	git push origin $(git_branch)
+	git add dist -f --all
+	-git commit "updating dist"
 	git push --tags
+	# git push origin $(git_branch)
 
 npm.publish: npm.version build
 	# -git commit "updating dist"
