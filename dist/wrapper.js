@@ -196,7 +196,7 @@ function _plainOptions (_options_pile, method) {
 
 function http (url, _config, body) {
 
-  var config = _plainOptions([http_defaults, _config]);
+  var config = _plainOptions([http_defaults, _config || {}]);
 
   config = copy( isObject(url) ? url : config || {} );
   config.url = url === config ? config.url : url;
@@ -243,50 +243,13 @@ http.responseData = function (response) {
   return response.data;
 };
 
-// function HttpBase ( options, options_pile ) {
-//   this.options = options || {};
-//   this.options_pile = (options_pile || []).concat(this.options);
-// }
-//
-// HttpBase.prototype.base = function (url, options) {
-//   if( typeof url === 'object' ) { options = url; url = null; }
-//   options = options ? Object.create(options) : {};
-//   if(url) options.url = url;
-//   return new HttpBase( options, this.options_pile );
-// };
-//
-// function _requestMethod (method, hasData) {
-//   return hasData ? function (path, data, _options) {
-//     _options = _plainOptions( this.options_pile.concat( Object.create(_options) ), method );
-//     return http( _options.url, _options, data );
-//   } : function (path, _options, data) {
-//     _options = _plainOptions( this.options_pile.concat( Object.create(_options) ), method );
-//     return http( _options.url, _options, data );
-//   };
-// }
-//
-// HttpBase.prototype.head = _requestMethod('head');
-// HttpBase.prototype.get = _requestMethod('get');
-// HttpBase.prototype.post = _requestMethod('post', true);
-// HttpBase.prototype.put = _requestMethod('put', true);
-// HttpBase.prototype.patch = _requestMethod('patch', true);
-// HttpBase.prototype.delete = _requestMethod('delete');
-//
-// HttpBase.prototype.config = function (_options) {
-//   if( _options === undefined ) return _plainOptions( [http_defaults].concat(this.options_pile) );
-//   merge( this.options, _options );
-// };
-//
-// HttpBase.prototype.responseData = http.responseData;
-
-
 function httpBase (target, options, options_pile) {
   var requestMethod = function (method, hasData) {
         return hasData ? function (path, data, _options) {
-          _options = _plainOptions( options_pile.concat(_options), method );
+          _options = _plainOptions( _options ? options_pile.concat(_options) : options_pile, method );
           return http( _options.url, _options, data );
         } : function (path, _options, data) {
-          _options = _plainOptions( options_pile.concat(_options), method );
+          _options = _plainOptions( _options ? options_pile.concat(_options) : options_pile, method );
           return http( _options.url, _options, data );
         };
       };
