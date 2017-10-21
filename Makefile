@@ -20,13 +20,17 @@ build: test
 	cp LICENSE dist/LICENSE
 	cp README.md dist/README.md
 
-npm.publish:
+npm.version:
 	npm version patch
-	git push --tags
-	git add dist -f
-	-git commit "updating dist"
 	git push origin $(git_branch)
-	cd dist && npm publish
+
+npm.publish: npm.version build
+	git pull --tags
+	git add dist -f --all
+	-git commit "updating dist"
+	git tag -a v$(shell node -e "process.stdout.write(require('./package').version + '\n')") -m "v$(shell node -e "process.stdout.write(require('./package').version + '\n')")"
+	git push --tags
+	git reset --hard origin/$(git_branch)
 
 github.release: export PKG_NAME=$(shell node -e "console.log(require('./package.json').name);")
 github.release: export PKG_VERSION=$(shell node -e "console.log('v'+require('./package.json').version);")
@@ -37,7 +41,7 @@ github.release:
 	@echo ${RELEASE_URL}
 	@true
 
-release: build npm.publish github.release
+release: npm.publish github.release
 
 echo:
 	@echo "make options: test build dev live"
