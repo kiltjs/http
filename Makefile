@@ -16,13 +16,13 @@ build: test
 	$(shell npm bin)/rollup src/http-fetch.js --format umd --output dist/fetch.js -n \$$http
 	$(shell npm bin)/rollup src/wrapper.js --format cjs --output dist/wrapper.js
 	cp src/http-node.js dist/http-node.js
+	cp package.json dist/package.json
+	cp LICENSE dist/LICENSE
+	cp README.md dist/README.md
 
 npm.publish:
 	npm version patch
 	git push --tags
-	cp package.json dist/package.json
-	cp LICENSE dist/LICENSE
-	cp README.md dist/README.md
 	git add dist -f
 	-git commit "updating dist"
 	git push origin $(git_branch)
