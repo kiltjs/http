@@ -21,16 +21,16 @@ build: test
 	cp README.md dist/README.md
 
 npm.version:
+	git pull --tags
 	npm version patch
 	git push origin $(git_branch)
+	git push --tags
 
 npm.publish: npm.version build
-	git pull --tags
-	git add dist -f --all
-	-git commit "updating dist"
-	git tag -a v$(shell node -e "process.stdout.write(require('./package').version + '\n')") -m "v$(shell node -e "process.stdout.write(require('./package').version + '\n')")"
-	git push --tags
-	git reset --hard origin/$(git_branch)
+	# -git commit "updating dist"
+	# git tag -a v$(shell node -e "process.stdout.write(require('./package').version + '\n')") -m "v$(shell node -e "process.stdout.write(require('./package').version + '\n')")"
+	# git reset --hard origin/$(git_branch)
+	cd dist && npm publish
 
 github.release: export PKG_NAME=$(shell node -e "console.log(require('./package.json').name);")
 github.release: export PKG_VERSION=$(shell node -e "console.log('v'+require('./package.json').version);")
