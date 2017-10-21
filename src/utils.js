@@ -71,12 +71,12 @@ export function merge (dest, src, concatArrays) {
   return src;
 }
 
-export function resolveFunctions (o, args, thisArg) {
+export function resolveFunctions (o, args, this_arg) {
   for( var key in o ) {
     if( isFunction(o[key]) ) {
-      o[key] = o[key].apply(thisArg, args || [o]);
+      o[key] = o[key].apply(this_arg, args);
     } else if( isObject(o[key]) ) {
-      o[key] = resolveFunctions(o[key], args, thisArg);
+      o[key] = resolveFunctions(o[key], args, this_arg);
     }
   }
   return o;

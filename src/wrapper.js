@@ -41,7 +41,7 @@ function http (url, _config, body) {
 
   if( !isString(config.url) ) throw new Error('url must be a string');
 
-  config = resolveFunctions(config);
+  config = resolveFunctions(config, [config]);
 
   if( config.params ) {
     config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serializeParams( config.params );
