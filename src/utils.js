@@ -152,7 +152,7 @@ function _joinPaths (paths) {
   var last = paths.length - 1;
   return paths.reduce(function (result, path, i) {
     if( path === '.' ) return result;
-    if( /^https?:\/\//.test(path) ) return [path];
+    if( /^[a-z]+:\/\//.test(path) ) return [path];
     if( /^\//.test(path) ) return _sanitizePath(path, 0, i === last );
 
     path = path.replace(/\.\.\//g, function () {
