@@ -12,8 +12,10 @@ test: install
 	$(shell npm bin)/eslint src
 
 build: test
-	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.js -n \$$http
-	$(shell npm bin)/rollup src/http-fetch.js --format umd --output dist/fetch.js -n \$$http
+	$(shell npm bin)/rollup src/http-browser.js --format cjs --output dist/browser.js
+	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.umd.js -n \$$http
+	$(shell npm bin)/rollup src/http-fetch.js --format cjs --output dist/fetch.js
+	$(shell npm bin)/rollup src/http-fetch.js --format umd --output dist/fetch.umd.js -n \$$http
 	$(shell npm bin)/rollup src/wrapper.js --format cjs --output dist/wrapper.js
 	cp src/http-node.js dist/http-node.js
 	cp package.json dist/package.json
