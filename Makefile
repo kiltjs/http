@@ -10,6 +10,7 @@ install:
 
 test: install
 	$(shell npm bin)/eslint src
+	$(shell npm bin)/mocha --require babel-core/register tests
 
 build: test
 	$(shell npm bin)/rollup src/http-browser.js --format cjs --output dist/browser.js
@@ -17,6 +18,7 @@ build: test
 	$(shell npm bin)/rollup src/http-fetch.js --format cjs --output dist/fetch.js
 	$(shell npm bin)/rollup src/http-fetch.js --format umd --output dist/fetch.umd.js -n \$$http
 	$(shell npm bin)/rollup src/wrapper.js --format cjs --output dist/wrapper.js
+	$(shell npm bin)/babel src/deserialize.js --out-file dist/deserialize.js
 	cp src/http-node.js dist/http-node.js
 	cp package.json dist/package.json
 	cp LICENSE dist/LICENSE

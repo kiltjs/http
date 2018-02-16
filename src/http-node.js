@@ -47,7 +47,8 @@ http.useRequest(function (config, resolve, reject) {
 
     res.on('end', function () {
       console.log('fetched', url.format() );
-      resolve({ config: config, headers: res.headers, data: parseData[parseContentType(res.headers['Content-Type'])] || data });
+      var format = parseContentType(res.headers['Content-Type']);
+      resolve({ config: config, headers: res.headers, data: parseData[format] ? parseData[format](data) : data });
       // resolve({ config: options, data: Buffer.concat(data) });
     });
 

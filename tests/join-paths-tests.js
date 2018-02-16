@@ -5,9 +5,9 @@ var assert = require('assert'),
 
 describe('joinPaths', function() {
 
-  it('__dirname', function () {
-    assert.strictEqual( joinPaths.root() + '/tests', __dirname );
-  });
+  // it('__dirname', function () {
+  //   assert.strictEqual( joinPaths.root() + '/tests', __dirname );
+  // });
 
   var test_paths = [
     {

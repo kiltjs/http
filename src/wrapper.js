@@ -1,5 +1,6 @@
 
-import {copy, extend, merge, isObject, isString, isFunction, headersToTitleSlug, serializeParams, resolveFunctions, joinPaths} from './utils';
+import {copy, extend, merge, isObject, isString, isFunction, resolveFunctions, joinPaths} from './utils';
+import serialize from './serialize';
 
 var http_defaults = {},
     makeRequest = function () {},
@@ -44,26 +45,26 @@ function http (url, _config, body) {
   config = resolveFunctions(config, [config]);
 
   if( config.params ) {
-    config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serializeParams( config.params ).join('&');
+    config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params ).join('&');
   }
 
-  var headers = copy(config.headers || {});
+  var headers = copy(config.headers || {}, 'underscore');
 
   if( config.json && !config.body ) {
-    headers.contentType = headers.contentType || 'application/json';
+    headers.content_type = headers.content_type || 'application/json';
     config.body = JSON.stringify(config.json);
-  } else if( headers.contentType === 'application/json' && typeof config.body === 'object' ) {
+  } else if( headers.content_type === 'application/json' && typeof config.body === 'object' ) {
     config.body = JSON.stringify(config.body);
   } else if( typeof config.body === 'object' &&
       !Blob.prototype.isPrototypeOf(config.body) &&
       !FormData.prototype.isPrototypeOf(config.body) ) {
     config.body = JSON.stringify(config.body);
-    headers.contentType = headers.contentType || 'application/json';
-  } else if( !headers.contentType ) headers.contentType || 'application/json';
+    headers.content_type = headers.content_type || 'application/json';
+  } else if( !headers.content_type ) headers.content_type || 'application/json';
 
-  headers.accept = headers.accept || headers.contentType || 'application/json';
+  headers.accept = headers.accept || headers.content_type || 'application/json';
 
-  config.headers = headersToTitleSlug(headers);
+  config.headers = copy(headers, 'header');
 
   var request = new Parole(function (resolve, reject) {
     makeRequest(config, resolve, reject);

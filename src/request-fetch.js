@@ -1,5 +1,5 @@
 
-import {extend, copy, headerToCamelCase, parseContentType} from './utils';
+import {extend, copy, toUnderscoreCase, parseContentType} from './utils';
 
 function getFetchResponse (response, config) {
   var headers = {},
@@ -7,7 +7,7 @@ function getFetchResponse (response, config) {
       entry = iterator.next();
 
   while( entry && !entry.done ) {
-    headers[headerToCamelCase(entry.value[0])] = entry.value[1];
+    headers[toUnderscoreCase(entry.value[0])] = entry.value[1];
     entry = iterator.next();
   }
 

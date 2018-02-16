@@ -1,6 +1,6 @@
 /* global ActiveXObject */
 
-import {headerToCamelCase, parseContentType} from './utils';
+import {toUnderscoreCase, parseContentType} from './utils';
 
 var parseData = {
   json: function (data) {
@@ -13,7 +13,7 @@ function _getXMLHeaders (request) {
   request.getAllResponseHeaders().split('\n').forEach(function (headerLine) {
     var matched = headerLine.match(/(.*?):(.*)/);
     if( matched ) {
-      headers[headerToCamelCase(matched[1])] = matched[2].trim();
+      headers[toUnderscoreCase(matched[1])] = matched[2].trim();
     }
   });
 

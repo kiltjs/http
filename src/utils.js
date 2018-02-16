@@ -16,25 +16,51 @@ export var isArray = Array.isArray || function (o) {
 export var isString = isType('string');
 export var isFunction = isType('function');
 
-export function mapObject (o, iteratee, thisArg) {
+export function toUnderscoreCase (text) {
+  return text.replace(/-/g, '_').replace(/([a-z])([A-Z])/, function (matched, a, b) { return a + '_' + b; }).toLowerCase();
+}
+
+export function toCamelCase (text) {
+  return text.replace(/([a-z])[-_]([a-z])/g, function (matched, a, b) { return a + b.toUpperCase(); });
+}
+
+export function toHeaderCase (text) {
+  var key = text.replace(/_/g, '-').replace(/([a-z])([A-Z])/, function (matched, a, b) { return a + '-' + b; });
+  return key[0].toUpperCase() + key.substr(1).toLowerCase().replace(/-[a-z]/g, function (matched) { return matched.toUpperCase(); });
+}
+
+function _passThrought (value) {
+  return value;
+}
+
+var case_formatters = {
+  underscore: toUnderscoreCase,
+  camel: toCamelCase,
+  header: toHeaderCase,
+};
+
+export function mapObject (o, iteratee, thisArg, mapFormatter) {
   var result = {};
+  mapFormatter = mapFormatter || _passThrought;
   for( var key in o ) {
-    result[key] = iteratee.call(thisArg, o[key], key);
+    result[mapFormatter(key)] = iteratee.call(thisArg, o[key], key);
   }
   return result;
 }
 
-export function copy (src) {
+export function copy (src, mapFormatter) {
+  if( typeof mapFormatter === 'string' ) mapFormatter = case_formatters[mapFormatter];
+
   if( isArray(src) ) {
     return src.map(function (item) {
-      return copy(item);
+      return copy(item, mapFormatter);
     });
   }
 
   if( isObject(src) ) {
     return mapObject(src, function (item) {
-      return copy(item);
-    });
+      return copy(item, mapFormatter);
+    }, src, mapFormatter);
   }
 
   return src;
@@ -47,7 +73,7 @@ export function extend (dest, src) {
 }
 
 function _mergeArrays(dest, src, concatArrays) {
-  if( !concatArrays ) return src.map(copy);
+  if( !concatArrays ) return src.map(function (item) { return copy(item); });
   [].push.apply(dest, src);
   for( var i = 0, n = src.length ; i < n ; i++ ) {
     dest.push( dest[i] ? merge(dest[i], src[i]) : copy(src[i]) );
@@ -80,56 +106,6 @@ export function resolveFunctions (o, args, this_arg) {
     }
   }
   return o;
-}
-
-export function headerToTitleSlug(text) {
-  // console.log('headerToTitleSlug', text);
-  var key = text.replace(/([a-z])([A-Z])/g, function (match, lower, upper) {
-      return lower + '-' + upper;
-  });
-  key = key[0].toUpperCase() + key.substr(1);
-
-  return key;
-}
-
-export function headersToTitleSlug(headers) {
-  var _headers = {};
-
-  for( var key in headers ) {
-    _headers[ headerToTitleSlug(key) ] = headers[key];
-  }
-
-  return _headers;
-}
-
-export function headerToCamelCase(text) {
-  var key = text[0].toLowerCase() + text.substr(1);
-  return key.replace(/([a-z])-([a-zA-Z])/g, function (match, lower, upper) {
-    return lower + upper.toUpperCase();
-  });
-}
-
-export function headersToCamelCase(headers) {
-  var _headers = {};
-
-  for( var key in headers ) {
-    _headers[ headerToCamelCase(key) ] = headers[key];
-  }
-
-  return _headers;
-}
-
-export function serializeParams (params, previous_levels) {
-  var results = [];
-  previous_levels = previous_levels ||[];
-
-  for( var param in params ) {
-    if( typeof params[param] === 'object' ) [].push.apply( results, serializeParams(params[param], previous_levels.concat(param) ) );
-    else results.push( previous_levels.concat(param).reduce(function (key, param) {
-      return key + ( key ? ('[' + param + ']') : param );
-    }, '') + '=' + encodeURIComponent(params[param]) );
-  }
-  return results;
 }
 
 var RE_contentType = /([^/]+)\/([^+]+\+)?([^;]*)/;
