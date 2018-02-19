@@ -11,6 +11,7 @@ function _qsKey (o, keys, value) {
 		if( !Array.isArray(o) ) throw new Error('trying to assing empty key to non Array object');
 		o.push( _qsKey(keys[0] === '' ? [] : {}, keys, value) );
 	} else {
+		key = key.replace(/-/g, '_');
 		o[key] = _qsKey(o[key] || ( keys[0] === '' ? [] : {} ), keys, value);
 	}
 

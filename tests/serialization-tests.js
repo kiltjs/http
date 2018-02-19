@@ -21,9 +21,9 @@ var serialization_dataset = [
     data: { foo: 'bar', list: ['foo', 'bar'] },
   },
   {
-    qs: 'foo=bar&list[]=foo&list[]=bar&list[2]=hola',
-    formal_qs: 'foo=bar&list[]=foo&list[]=bar&list[]=hola',
-    data: { foo: 'bar', list: ['foo', 'bar', 'hola'] },
+    qs: 'foo=bar&list[]=foo&list[]=bar&list[2]=hola&foo-bar=gogogo',
+    formal_qs: 'foo=bar&list[]=foo&list[]=bar&list[]=hola&foo_bar=gogogo',
+    data: { foo: 'bar', list: ['foo', 'bar', 'hola'], foo_bar: 'gogogo' },
   },
   {
     qs: 'foo=bar&list[]=foo&list[]=bar&list[2]first_name=Johnny&list[2]last_name=Boy',
