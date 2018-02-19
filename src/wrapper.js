@@ -30,6 +30,19 @@ function _plainOptions (_options_pile, method) {
   return plain_options;
 }
 
+function getInterceptorsProcessor (interceptors, done, error) {
+  function processInterceptor (_res, interceptor) {
+    if( !interceptor ) return Parole.resolve(_res).then(done, error);
+
+    return Parole.resolve( interceptor(_res) ).then(function (__res) {
+      processInterceptor ( __res, interceptors.shift() );
+    }, error);
+  }
+  return function (res) {
+    return processInterceptor( res, interceptors.shift() );
+  };
+}
+
 function http (url, _config, body) {
 
   var config = _plainOptions([http_defaults, _config || {}]);
@@ -66,9 +79,37 @@ function http (url, _config, body) {
 
   config.headers = copy(headers, 'header');
 
-  var request = new Parole(function (resolve, reject) {
-    makeRequest(config, resolve, reject);
+  var req_interceptors = [],
+      req_error_interceptors = [],
+      res_interceptors = [],
+      res_error_interceptors = [];
+
+  if( config.interceptors ) config.interceptors.forEach(function (interceptor) {
+    if( interceptor.request ) req_interceptors.push(interceptor.request);
+    if( interceptor.requestError ) req_error_interceptors.push(interceptor.requestError);
+    if( interceptor.response ) res_interceptors.push(interceptor.response);
+    if( interceptor.responseError ) res_error_interceptors.push(interceptor.responseError);
   });
+
+  var request = new Parole(function (resolve, reject) {
+        if( req_interceptors.length ) getInterceptorsProcessor(req_interceptors, resolve, reject)(config);
+        else resolve(config);
+      })
+      .catch(function (reason) {
+        if( req_error_interceptors.length ) {
+          return new Promise(function (resolve, reject) {
+            getInterceptorsProcessor(req_error_interceptors, resolve, reject)(reason);
+          });
+        } else throw reason;
+      })
+      .then(function (config) {
+        return new Parole(function (resolve, reject) {
+          makeRequest(config,
+            res_interceptors.length ? getInterceptorsProcessor(res_interceptors, resolve) : resolve,
+            res_error_interceptors.length ? getInterceptorsProcessor(res_error_interceptors, reject) : reject
+          );
+        });
+      });
 
   request.config = config;
 
@@ -112,6 +153,10 @@ function httpBase (target, options, options_pile) {
     config: function (_options) {
       if( options === undefined ) return _plainOptions( [http_defaults].concat(this.options_pile).concat(options) );
       merge( options, _options );
+    },
+    addInterceptor: function (interceptor_definitions) {
+      options.interceptors = options.interceptors || [];
+      options.interceptors.push(interceptor_definitions);
     },
     responseData: http.responseData,
   });
