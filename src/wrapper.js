@@ -55,6 +55,9 @@ function http (url, _config, body) {
 
   if( !isString(config.url) ) throw new Error('url must be a string');
 
+  var interceptors = config.interceptors || [];
+  delete config.interceptors;
+
   config = resolveFunctions(config, [config]);
 
   if( config.params ) {
@@ -84,7 +87,7 @@ function http (url, _config, body) {
       res_interceptors = [],
       res_error_interceptors = [];
 
-  if( config.interceptors ) config.interceptors.forEach(function (interceptor) {
+  interceptors.forEach(function (interceptor) {
     if( interceptor.request ) req_interceptors.push(interceptor.request);
     if( interceptor.requestError ) req_error_interceptors.push(interceptor.requestError);
     if( interceptor.response ) res_interceptors.push(interceptor.response);
@@ -151,7 +154,7 @@ function httpBase (target, options, options_pile) {
       return httpBase( requestMethod('get'), options, options_pile.concat(options) );
     },
     config: function (_options) {
-      if( options === undefined ) return _plainOptions( [http_defaults].concat(this.options_pile).concat(options) );
+      if( options === undefined ) return _plainOptions( this.options_pile.concat(options) );
       merge( options, _options );
     },
     addInterceptor: function (interceptor_definitions) {

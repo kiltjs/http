@@ -5,6 +5,12 @@ import http from '../src/wrapper';
 
 function _noop () {}
 
+// http.config({
+//   headers: {
+//     cookie: 'foo: bar'
+//   }
+// });
+
 var headers_dataset = [
   [{}, { 'Content-Type': 'application/json' }],
   [{ content_type: 'application/json' }, { 'Content-Type': 'application/json' }],
