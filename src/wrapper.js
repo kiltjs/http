@@ -53,7 +53,6 @@ function http (url, _config, body) {
   config.url = url === config ? config.url : url;
   config.method = config.method ? config.method.toUpperCase() : 'GET';
   config.timestamp = new Date().getTime();
-  config.body = body || config.body;
 
   if( !isString(config.url) ) throw new Error('url must be a string');
 
@@ -61,6 +60,7 @@ function http (url, _config, body) {
   delete config.interceptors;
 
   config = resolveFunctions(config, [config]);
+  config.body = body || config.body;
 
   if( config.params ) {
     config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params ).join('&');
