@@ -11,7 +11,7 @@ function getFetchResponse (response, config) {
     entry = iterator.next();
   }
 
-  var type = parseContentType(headers.contentType);
+  var type = parseContentType(headers.content_type);
 
   return ( response[config.format || type] ? response[config.format || type]() : response.text() ).then(function (data) {
     return {

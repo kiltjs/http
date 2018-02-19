@@ -38,7 +38,7 @@ function xmlRequest (config, resolve, reject) {
     if( request.readyState === 'complete' || request.readyState === 4 ) {
       // var type = parseContentType( request.getResponseHeader('Content-Type') ),
       var headers = _getXMLHeaders(request),
-          type = parseContentType( headers.contentType ),
+          type = parseContentType( headers.content_type ),
           response = {
             config: config,
             status: request.status,
