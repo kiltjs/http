@@ -45,6 +45,14 @@ function getInterceptorsProcessor (interceptors, resolve, reject, is_error) {
   };
 }
 
+var isBlob = typeof Blob === 'function' ? function (x) {
+  return Blob.prototype.isPrototypeOf(x);
+} : function () { return false; };
+
+var isFormData = typeof FormData === 'function' ? function (x) {
+  return FormData.prototype.isPrototypeOf(x);
+} : function () { return false; };
+
 function http (url, _config, body) {
 
   var config = _plainOptions([http_defaults, _config || {}]);
@@ -63,7 +71,7 @@ function http (url, _config, body) {
   config.body = body || config.body;
 
   if( config.params ) {
-    config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params ).join('&');
+    config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params );
   }
 
   var headers = copy(config.headers || {}, 'underscore');
@@ -74,8 +82,8 @@ function http (url, _config, body) {
   } else if( headers.content_type === 'application/json' && typeof config.body === 'object' ) {
     config.body = JSON.stringify(config.body);
   } else if( typeof config.body === 'object' &&
-      !Blob.prototype.isPrototypeOf(config.body) &&
-      !FormData.prototype.isPrototypeOf(config.body) ) {
+      !isBlob(config.body) &&
+      !isFormData(config.body) ) {
     config.body = JSON.stringify(config.body);
     headers.content_type = headers.content_type || 'application/json';
   } else if( !headers.content_type ) headers.content_type || 'application/json';
