@@ -37,9 +37,9 @@ bower install http-rest --save
 // if you want to use fetch API when present (in bower.json)
 // ...
 "overrides": {
-	"http-rest": {
-		"main": "dist/fetch.js"
-	}
+  "http-rest": {
+    "main": "dist/fetch.js"
+  }
 },
 // ...
 ```
@@ -52,15 +52,15 @@ bower install http-rest --save
 $http.get('/items', { params: { prop1: value1 } });
 
 $http.post('/items', {
-	sample: 'payload'
+  sample: 'payload'
 });
 
 $http.put('/items/:itemId', {
-	sample: 'payload'
+  sample: 'payload'
 });
 
 $http.patch('/items/:itemId', {
-	sample: 'payload'
+  sample: 'payload'
 });
 
 $http.delete('/items/:itemId');
@@ -75,7 +75,7 @@ httpItems.post({ prop1: 'value1' });
 
 httpItems.get(itemId);
 
-httpItems.put(itemId, {	prop1: 'another value' });
+httpItems.put(itemId, {  prop1: 'another value' });
 
 httpItems.delete(itemId);
 ```
