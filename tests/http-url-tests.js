@@ -1,7 +1,7 @@
 /* globals describe, it */
 
 import assert from 'assert';
-import http from '../src/wrapper';
+import http from '../src/http-wrapper';
 
 var urls_dataset = [
   ['foo', 'foo'],

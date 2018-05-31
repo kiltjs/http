@@ -1,3 +1,4 @@
+/* globals require, process */
 
 require('nitro')(function (nitro) {
 
