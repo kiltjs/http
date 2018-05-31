@@ -17,7 +17,7 @@ build: test
 	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.umd.js -n \$$http
 	$(shell npm bin)/rollup src/http-fetch.js --format cjs --output dist/fetch.js
 	$(shell npm bin)/rollup src/http-fetch.js --format umd --output dist/fetch.umd.js -n \$$http
-	$(shell npm bin)/rollup src/wrapper.js --format cjs --output dist/wrapper.js
+	$(shell npm bin)/rollup src/http-wrapper.js --format cjs --output dist/http-wrapper.js
 	$(shell npm bin)/babel src/deserialize.js --out-file dist/deserialize.js
 	$(shell npm bin)/babel src/serialize.js --out-file dist/serialize.js
 	cp src/http-node.js dist/http-node.js
