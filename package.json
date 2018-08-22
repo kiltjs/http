@@ -1,5 +1,5 @@
 {
-  "name": "http-rest",
+  "name": "@kilt/http",
   "version": "1.0.3",
   "description": "http jstool example",
   "main": "http-node.js",

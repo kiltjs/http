@@ -13,7 +13,7 @@
 > Node module
 
 ``` sh
-npm install http-rest --save
+npm install @kilt/http --save
 ```
 ``` js
 var $http = require('http-rest');
