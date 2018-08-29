@@ -164,7 +164,7 @@ function httpBase (target, options, options_pile) {
       return httpBase( requestMethod('get'), options, options_pile.concat(options) );
     },
     config: function (_options) {
-      if( options === undefined ) return _plainOptions( this.options_pile.concat(options) );
+      if( _options === undefined ) return _plainOptions( options_pile.concat(options) );
       merge( options, _options );
     },
     addInterceptor: function (interceptor_definitions) {
