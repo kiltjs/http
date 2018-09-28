@@ -85,8 +85,8 @@ function http (url, _config, body) {
       !isBlob(config.body) &&
       !isFormData(config.body) ) {
     config.body = JSON.stringify(config.body);
-    headers.content_type = headers.content_type || 'application/json';
-  } else if( !headers.content_type ) headers.content_type = 'application/json';
+    if( !('content_type' in headers) ) headers.content_type = 'application/json';
+  } else if( !('content_type' in headers) ) headers.content_type = 'application/json';
 
   headers.accept = headers.accept || headers.content_type || 'application/json';
 
