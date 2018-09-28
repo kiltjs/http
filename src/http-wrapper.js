@@ -86,7 +86,7 @@ function http (url, _config, body) {
       !isFormData(config.body) ) {
     config.body = JSON.stringify(config.body);
     if( !('content_type' in headers) ) headers.content_type = 'application/json';
-  } else if( !('content_type' in headers) ) headers.content_type = 'application/json';
+  } else if( 'content_type' in headers && !headers.content_type ) delete headers.content_type;
 
   headers.accept = headers.accept || headers.content_type || 'application/json';
 
