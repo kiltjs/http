@@ -31,18 +31,28 @@ function _plainOptions (_options_pile, method) {
 }
 
 function getInterceptorsProcessor (interceptors, resolve, reject, is_error) {
-  function processInterceptor (_res, interceptor) {
+
+  function _processInterceptor (_res, interceptor) {
+    var result = undefined;
     if( interceptor ) {
       try{
-        processInterceptor( resolve( interceptor(_res) ), interceptors.shift() );
+        result = interceptor(_res);
+        is_error = false;
       } catch (err) {
-        reject(err);
+        is_error = true;
+        processInterceptor( err );
       }
+
+      if( result !== undefined ) processInterceptor( result );
+      
     } else (is_error ? reject : resolve)(_res);
   }
-  return function (res) {
-    return processInterceptor( res, interceptors.shift() );
-  };
+
+  function processInterceptor (res) {
+    return _processInterceptor( res, interceptors.shift() );
+  }
+
+  return processInterceptor;
 }
 
 var isBlob = typeof Blob === 'function' ? function (x) {
