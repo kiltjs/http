@@ -44,7 +44,7 @@ function getInterceptorsProcessor (interceptors, resolve, reject, is_error) {
       }
 
       if( result !== undefined ) processInterceptor( result );
-      
+
     } else (is_error ? reject : resolve)(_res);
   }
 
@@ -114,7 +114,8 @@ function http (url, _config, body) {
     if( interceptor.responseError ) res_error_interceptors.push(interceptor.responseError);
   });
 
-  var request = new Parole(function (resolve, reject) {
+  var request = null;
+  var controller = new Parole(function (resolve, reject) {
         if( req_interceptors.length ) getInterceptorsProcessor(req_interceptors, resolve, reject)(config);
         else resolve(config);
       })
@@ -127,16 +128,19 @@ function http (url, _config, body) {
       })
       .then(function (config) {
         return new Parole(function (resolve, reject) {
-          makeRequest(config,
+          request = makeRequest(config,
             res_interceptors.length ? getInterceptorsProcessor(res_interceptors, resolve, reject) : resolve,
             res_error_interceptors.length ? getInterceptorsProcessor(res_error_interceptors, resolve, reject) : reject
           );
         });
       });
 
-  request.config = config;
+  controller.config = config;
+  controller.abort = function () {
+    if( request ) request.abort();
+  };
 
-  return request;
+  return controller;
 }
 
 http.responseData = function (response) {

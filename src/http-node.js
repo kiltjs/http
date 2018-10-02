@@ -4,6 +4,11 @@
 var URL = require('url');
 var http = require('./http-wrapper');
 
+var protocols = {
+  http: require('http'),
+  https: require('https'),
+};
+
 var RE_contentType = /([^/]+)\/([^+]+\+)?([^;]*)/;
 function parseContentType(contentType) {
   var matches = contentType && contentType.match(RE_contentType);
@@ -32,11 +37,21 @@ http.useRequest(function (config, resolve, reject) {
   var data = null;
   // var data = [];
 
-  var req = require(url.protocol.replace(/:$/, '')).request(options, function (res) {
+  var req = protocols[url.protocol.replace(/:$/, '')].request(options, function (res) {
     // console.log(`STATUS: ${res.statusCode}`);
     // console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
     // res.setEncoding('utf8');
     res.setEncoding(config.headers['Content-Type'] ? 'utf8' : 'binary');
+
+    req.on('socket', function (socket) {
+      if( 'timeout' in config )
+      socket.setTimeout(config.timeout);
+      socket.on('timeout', function () {
+        req.abort();
+        reject('timeout');
+      });
+    });
+
 
     res.on('data', function (chunk) {
 
@@ -64,6 +79,12 @@ http.useRequest(function (config, resolve, reject) {
   });
 
   req.end();
+
+  return {
+    abort: function () {
+      req.abort();
+    },
+  };
 
 });
 

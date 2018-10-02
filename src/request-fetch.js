@@ -25,7 +25,15 @@ function getFetchResponse (response, config) {
 }
 
 function fetchRequest (config, resolve, reject) {
-  fetch(config.url, extend( copy(config) , {
+  var controller = new AbortController;
+
+  if( config.timeout ) {
+    setTimeout(function () {
+      reject('timeout');
+    }, config.timeout);
+  }
+
+  fetch(config.url, { signal: controller.signal }, extend( copy(config) , {
     headers: new Headers(config.headers), redirect: 'follow',
     credentials: config.credentials || (config.withCredentials ? 'include' : 'same-origin'),
   }) ).then(function (response) {
@@ -33,6 +41,12 @@ function fetchRequest (config, resolve, reject) {
   }, function (response) {
     getFetchResponse(response, config).then(reject);
   });
+
+  return {
+    abort: function () {
+      controller.abort();
+    },
+  };
 }
 
 export default fetchRequest;

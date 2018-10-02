@@ -22,32 +22,32 @@ function _getXMLHeaders (request) {
 
 function xmlRequest (config, resolve, reject) {
 
-  var request = null;
+  var xhr = null;
 
   try { // Firefox, Opera 8.0+, Safari
-    request = new XMLHttpRequest();
+    xhr = new XMLHttpRequest();
   } catch (e) { // Internet Explorer
-    try { request = new ActiveXObject('Msxml2.XMLHTTP'); }  // jshint ignore:line
-    catch (er) { request = new ActiveXObject('Microsoft.XMLHTTP'); }  // jshint ignore:line
+    try { xhr = new ActiveXObject('Msxml2.XMLHTTP'); }  // jshint ignore:line
+    catch (er) { xhr = new ActiveXObject('Microsoft.XMLHTTP'); }  // jshint ignore:line
   }
-  if( request === null ) { throw 'Browser does not support HTTP Request'; }
+  if( xhr === null ) { throw 'Browser does not support HTTP Request'; }
 
-  if( config.withCredentials || config.credentials === 'include' ) request.withCredentials = true;
+  if( config.with_credentials || config.withCredentials || config.credentials === 'include' ) xhr.withCredentials = true;
 
-  request.onreadystatechange = function() {
-    if( request.readyState === 'complete' || request.readyState === 4 ) {
+  xhr.onreadystatechange = function() {
+    if( xhr.readyState === 'complete' || xhr.readyState === 4 ) {
       // var type = parseContentType( request.getResponseHeader('Content-Type') ),
-      var headers = _getXMLHeaders(request),
+      var headers = _getXMLHeaders(xhr),
           type = parseContentType( headers.content_type ),
           response = {
             config: config,
-            status: request.status,
-            statusText: request.statusText,
+            status: xhr.status,
+            statusText: xhr.statusText,
             headers: headers,
-            data: type === 'xml' ? request.responseXML : (parseData[type] ? parseData[type](request.responseText) : request.responseText),
+            data: type === 'xml' ? xhr.responseXML : (parseData[type] ? parseData[type](xhr.responseText) : xhr.responseText),
           };
 
-      if( request.status >= 200 && request.status < 400 ) {
+      if( xhr.status >= 200 && xhr.status < 400 ) {
         resolve( response );
       } else {
         reject( response );
@@ -55,15 +55,26 @@ function xmlRequest (config, resolve, reject) {
     }
   };
 
-  request.open(config.method, config.url, true);
+  if( 'timeout' in config ) xhr.timeout = config.timeout;
+  xhr.ontimeout = function () {
+    reject('timeout');
+  };
+
+  xhr.open(config.method, config.url, true);
 
   if( config.headers ) {
     for( var key in config.headers ) {
-      request.setRequestHeader( key, config.headers[key] );
+      xhr.setRequestHeader( key, config.headers[key] );
     }
   }
 
-  request.send( config.body );
+  xhr.send( config.body );
+
+  return {
+    abort: function () {
+      xhr.abort();
+    },
+  };
 }
 
 export default xmlRequest;
