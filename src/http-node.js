@@ -47,7 +47,7 @@ http.useRequest(function (config, resolve, reject) {
       if( 'timeout' in config )
       socket.setTimeout(config.timeout);
       socket.on('timeout', function () {
-        req.abort();
+        // req.abort();
         reject('timeout');
       });
     });
