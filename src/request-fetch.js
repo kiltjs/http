@@ -33,10 +33,17 @@ function fetchRequest (config, resolve, reject) {
     }, config.timeout);
   }
 
-  fetch(config.url, { signal: controller.signal }, extend( copy(config) , {
-    headers: new Headers(config.headers), redirect: 'follow',
-    credentials: config.credentials || (config.withCredentials ? 'include' : 'same-origin'),
-  }) ).then(function (response) {
+  var _config = extend( copy(config) , {
+    headers: new Headers(config.headers),
+    redirect: 'follow',
+  });
+
+  if( config.withCredentials ) {
+    _config.mode = 'cors';
+    _config.credentials = 'include';
+  }
+
+  fetch(config.url, { signal: controller.signal }, _config ).then(function (response) {
     getFetchResponse(response, config).then(response.ok ? resolve : reject);
   }, function (response) {
     getFetchResponse(response, config).then(reject);

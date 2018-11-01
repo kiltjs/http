@@ -30,7 +30,7 @@ function _plainOptions (_options_pile, method) {
   return plain_options;
 }
 
-function getInterceptorsProcessor (interceptors, resolve, reject, is_error) {
+function _getInterceptorsProcessor (interceptors, resolve, reject, is_error, is_config) {
 
   function _processInterceptor (_res, interceptor) {
     var result = undefined;
@@ -43,7 +43,8 @@ function getInterceptorsProcessor (interceptors, resolve, reject, is_error) {
         processInterceptor( err );
       }
 
-      if( result !== undefined ) processInterceptor( result );
+      if( is_config ) processInterceptor( result === undefined ? _res : result );
+      else if( result !== undefined ) processInterceptor( result );
 
     } else (is_error ? reject : resolve)(_res);
   }
@@ -63,7 +64,7 @@ var isFormData = typeof FormData === 'function' ? function (x) {
   return FormData.prototype.isPrototypeOf(x);
 } : function () { return false; };
 
-function http (url, _config, body) {
+function http (url, _config, data) {
 
   var config = _plainOptions([http_defaults, _config || {}]);
 
@@ -74,11 +75,17 @@ function http (url, _config, body) {
 
   if( !isString(config.url) ) throw new Error('url must be a string');
 
+  data = data || config.data || config.json;
+
+  var is_json = 'json' in config || (
+    typeof config.body === 'object' && !isBlob(config.body) && !isFormData(config.body)
+  );
   var interceptors = config.interceptors || [];
+
   delete config.interceptors;
+  config.data = data;
 
   config = resolveFunctions(config, [config]);
-  config.body = body || config.body;
 
   if( config.params ) {
     config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params );
@@ -86,17 +93,10 @@ function http (url, _config, body) {
 
   var headers = copy(config.headers || {}, 'underscore');
 
-  if( config.json && !config.body ) {
-    headers.content_type = headers.content_type || 'application/json';
-    config.body = JSON.stringify(config.json);
-  } else if( headers.content_type === 'application/json' && typeof config.body === 'object' ) {
-    config.body = JSON.stringify(config.body);
-  } else if( typeof config.body === 'object' &&
-      !isBlob(config.body) &&
-      !isFormData(config.body) ) {
-    config.body = JSON.stringify(config.body);
-    if( !('content_type' in headers) ) headers.content_type = 'application/json';
-  } else if( 'content_type' in headers && !headers.content_type ) delete headers.content_type;
+  if( config.auth ) headers.authorization = 'Basic ' + btoa(config.auth.user + ':' + config.auth.pass);
+
+  if( is_json && !headers.content_type ) headers.content_type = 'application/json';
+  if( 'content_type' in headers && !headers.content_type ) delete headers.content_type;
 
   headers.accept = headers.accept || headers.content_type || 'application/json';
 
@@ -116,21 +116,21 @@ function http (url, _config, body) {
 
   var request = null;
   var controller = new Parole(function (resolve, reject) {
-        if( req_interceptors.length ) getInterceptorsProcessor(req_interceptors, resolve, reject)(config);
+        if( req_interceptors.length ) _getInterceptorsProcessor(req_interceptors, resolve, reject, null, true)(config);
         else resolve(config);
       })
       .catch(function (reason) {
         if( req_error_interceptors.length ) {
           return new Parole(function (resolve, reject) {
-            getInterceptorsProcessor(req_error_interceptors, resolve, reject, true)(reason);
+            _getInterceptorsProcessor(req_error_interceptors, resolve, reject, true)(reason);
           });
         } else throw reason;
       })
       .then(function (config) {
         return new Parole(function (resolve, reject) {
           request = makeRequest(config,
-            res_interceptors.length ? getInterceptorsProcessor(res_interceptors, resolve, reject) : resolve,
-            res_error_interceptors.length ? getInterceptorsProcessor(res_error_interceptors, resolve, reject) : reject
+            res_interceptors.length ? _getInterceptorsProcessor(res_interceptors, resolve, reject) : resolve,
+            res_error_interceptors.length ? _getInterceptorsProcessor(res_error_interceptors, resolve, reject) : reject
           );
         });
       });
@@ -148,8 +148,8 @@ http.responseData = function (response) {
 };
 
 function httpBase (target, options, options_pile) {
-  var requestMethod = function (method, hasData) {
-        return hasData ? function (url, data, _options) {
+  var _requestMethod = function (method, has_data) {
+        return has_data ? function (url, data, _options) {
           if( typeof url === 'object' ) { _options = data; data = url; url = null; }
           _options = Object.create(_options || {});
           if( url ) _options.url = url;
@@ -166,16 +166,16 @@ function httpBase (target, options, options_pile) {
       };
 
   return extend(target, {
-    head: requestMethod('head'),
-    get: requestMethod('get'),
-    post: requestMethod('post', true),
-    put: requestMethod('put', true),
-    patch: requestMethod('patch', true),
-    delete: requestMethod('delete'),
+    head: _requestMethod('head'),
+    get: _requestMethod('get'),
+    post: _requestMethod('post', true),
+    put: _requestMethod('put', true),
+    patch: _requestMethod('patch', true),
+    delete: _requestMethod('delete'),
     base: function (url, _options) {
       var options = _options ? Object.create(_options) :{};
       options.url = url;
-      return httpBase( requestMethod('get'), options, options_pile.concat(options) );
+      return httpBase( _requestMethod('get'), options, options_pile.concat(options) );
     },
     config: function (_options) {
       if( _options === undefined ) return _plainOptions( options_pile.concat(options) );
@@ -186,6 +186,7 @@ function httpBase (target, options, options_pile) {
       options.interceptors.push(interceptor_definitions);
     },
     responseData: http.responseData,
+    useRequest: http.useRequest,
   });
 }
 
