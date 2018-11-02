@@ -1,7 +1,7 @@
 /* globals describe, it */
 
 import assert from 'assert';
-import http from '../src/http-wrapper';
+import http from '../src/http-rest';
 
 global.btoa = function (text) {
   return Buffer.from(text).toString('base64');
@@ -37,7 +37,7 @@ describe('http:headers', function() {
         assert.deepEqual( config, headers[1] );
       }).get('foo/bar?foo=bar', {
         headers: headers[0]
-      }).catch(_noop);
+      });
     });
 
   });

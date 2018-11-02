@@ -1,10 +1,11 @@
 
 import {copy, extend, merge, isObject, isString, isFunction, resolveFunctions, joinPaths} from './utils';
-import serialize from './serialize';
+import {serialize} from './query-string';
 
 var http_defaults = {},
-    makeRequest = function () {},
-    Parole = typeof Promise !== 'undefined' ? Promise : function () {};
+    _makeRequest = function () {};
+
+var Parole = typeof Promise !== 'undefined' ? Promise : function () {};
 
 function _plainOptions (_options_pile, method) {
   var options_pile = _options_pile ? copy(_options_pile) : [];
@@ -30,30 +31,30 @@ function _plainOptions (_options_pile, method) {
   return plain_options;
 }
 
-function _getInterceptorsProcessor (interceptors, resolve, reject, is_error, is_config) {
+function _getInterceptorsProcessor (interceptors, resolve, reject, is_error) {
+  var running_error = is_error === true;
 
   function _processInterceptor (_res, interceptor) {
+    if( !interceptor ) return (running_error ? reject : resolve)(_res);
+
     var result = undefined;
-    if( interceptor ) {
-      try{
-        result = interceptor(_res);
-        is_error = false;
-      } catch (err) {
-        is_error = true;
-        processInterceptor( err );
-      }
 
-      if( is_config ) processInterceptor( result === undefined ? _res : result );
-      else if( result !== undefined ) processInterceptor( result );
+    try{
+      result = interceptor(_res);
+      if( result === undefined ) result = _res;
+      else running_error = false;
+    } catch (err) {
+      result = err;
+      running_error = true;
+    }
 
-    } else (is_error ? reject : resolve)(_res);
+    if( running_error !== is_error ) (running_error ? reject : resolve)(_res);
+    else _processInterceptor(result, interceptors.shift());
   }
 
-  function processInterceptor (res) {
-    return _processInterceptor( res, interceptors.shift() );
-  }
-
-  return processInterceptor;
+  return function (res) {
+    _processInterceptor( res, interceptors.shift() );
+  };
 }
 
 var isBlob = typeof Blob === 'function' ? function (x) {
@@ -65,31 +66,31 @@ var isFormData = typeof FormData === 'function' ? function (x) {
 } : function () { return false; };
 
 function http (url, _config, data) {
-
   var config = _plainOptions([http_defaults, _config || {}]);
 
   config = copy( isObject(url) ? url : config || {} );
-  config.url = url === config ? config.url : url;
   config.method = config.method ? config.method.toUpperCase() : 'GET';
   config.timestamp = new Date().getTime();
 
-  if( !isString(config.url) ) throw new Error('url must be a string');
+  if( !isString(url) ) throw new Error('url must be a string');
+  // config.url = url === config ? config.url : url;
 
   data = data || config.data || config.json;
 
-  var is_json = 'json' in config || (
-    typeof config.body === 'object' && !isBlob(config.body) && !isFormData(config.body)
+  var is_json = data && 'json' in config || (
+    typeof data === 'object' && !isBlob(data) && !isFormData(data)
   );
-  var interceptors = config.interceptors || [];
-
-  delete config.interceptors;
   config.data = data;
+
+  var interceptors = config.interceptors || [];
+  delete config.interceptors;
 
   config = resolveFunctions(config, [config]);
 
   if( config.params ) {
-    config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params );
+    url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params );
   }
+  config.url = url;
 
   var headers = copy(config.headers || {}, 'underscore');
 
@@ -103,34 +104,37 @@ function http (url, _config, data) {
   config.headers = copy(headers, 'header');
 
   var req_interceptors = [],
-      req_error_interceptors = [],
+      // req_error_interceptors = [],
       res_interceptors = [],
       res_error_interceptors = [];
 
   interceptors.forEach(function (interceptor) {
     if( interceptor.request ) req_interceptors.push(interceptor.request);
-    if( interceptor.requestError ) req_error_interceptors.push(interceptor.requestError);
+    // if( interceptor.requestError ) req_error_interceptors.push(interceptor.requestError);
     if( interceptor.response ) res_interceptors.push(interceptor.response);
     if( interceptor.responseError ) res_error_interceptors.push(interceptor.responseError);
   });
 
   var request = null;
-  var controller = new Parole(function (resolve, reject) {
-        if( req_interceptors.length ) _getInterceptorsProcessor(req_interceptors, resolve, reject, null, true)(config);
-        else resolve(config);
-      })
-      .catch(function (reason) {
-        if( req_error_interceptors.length ) {
-          return new Parole(function (resolve, reject) {
-            _getInterceptorsProcessor(req_error_interceptors, resolve, reject, true)(reason);
-          });
-        } else throw reason;
+
+  // var deferred = defer(),
+  //     controller = deferred.promise;
+  //
+  // _makeRequest(config,
+  //   res_interceptors.length ? _getInterceptorsProcessor(res_interceptors, deferred.resolve, deferred.reject) : deferred.resolve,
+  //   res_error_interceptors.length ? _getInterceptorsProcessor(res_error_interceptors, deferred.resolve, deferred.reject) : deferred.resolve
+  // );
+
+  var controller = new Parole(function (resolve, _reject) {
+        // if( req_interceptors.length ) _getInterceptorsProcessor(req_interceptors, resolve, reject)(config);
+        // else resolve(config);
+        resolve(config);
       })
       .then(function (config) {
         return new Parole(function (resolve, reject) {
-          request = makeRequest(config,
-            res_interceptors.length ? _getInterceptorsProcessor(res_interceptors, resolve, reject) : resolve,
-            res_error_interceptors.length ? _getInterceptorsProcessor(res_error_interceptors, resolve, reject) : reject
+          request = _makeRequest(config,
+            res_interceptors.length ? _getInterceptorsProcessor(res_interceptors, resolve, reject, false) : resolve,
+            res_error_interceptors.length ? _getInterceptorsProcessor(res_error_interceptors, resolve, reject, true) : reject
           );
         });
       });
@@ -150,18 +154,19 @@ http.responseData = function (response) {
 function httpBase (target, options, options_pile) {
   var _requestMethod = function (method, has_data) {
         return has_data ? function (url, data, _options) {
-          if( typeof url === 'object' ) { _options = data; data = url; url = null; }
-          _options = Object.create(_options || {});
-          if( url ) _options.url = url;
-          _options = _plainOptions( _options ? options_pile.concat(_options) : options_pile, method );
-          return http( _options.url, _options, data );
-        } : function (url, _options, params) {
-          if( typeof url === 'object' ) { params = _options; _options = url; url = null; }
-          _options = Object.create(_options || {});
-          if( url ) _options.url = url;
-          if( params ) _options.params = params;
-          _options = _plainOptions( _options ? options_pile.concat(_options) : options_pile, method );
-          return http( _options.url, _options );
+          // if( url && typeof url === 'object' ) { _options = data; data = url; url = null; }
+          _options = _plainOptions(
+            _options ? options_pile.concat(Object.create(_options)) : options_pile
+          , method );
+          // if( url ) _options.url = url;
+          return http( url, _options, data );
+        } : function (url, _options) {
+          // if( url && typeof url === 'object' ) { _options = url; url = null; }
+          _options = _plainOptions(
+            _options ? options_pile.concat(Object.create(_options)) : options_pile
+          , method );
+          // if( url ) _options.url = url;
+          return http( url, _options );
         };
       };
 
@@ -172,6 +177,7 @@ function httpBase (target, options, options_pile) {
     put: _requestMethod('put', true),
     patch: _requestMethod('patch', true),
     delete: _requestMethod('delete'),
+    options: _requestMethod('options'), // for node
     base: function (url, _options) {
       var options = _options ? Object.create(_options) :{};
       options.url = url;
@@ -186,17 +192,21 @@ function httpBase (target, options, options_pile) {
       options.interceptors.push(interceptor_definitions);
     },
     responseData: http.responseData,
-    useRequest: http.useRequest,
+    useRequest: function (request) {
+      if( !isFunction(request) ) throw new Error('request should be a function');
+      _makeRequest = request;
+      return target;
+    },
   });
 }
 
 http.base = httpBase;
 httpBase(http, http_defaults, []);
 
-http.usePromise = function (P) { Parole = P; return http; };
+// http.usePromise = function (P) { Parole = P; return http; };
 http.useRequest = function (request) {
   if( !isFunction(request) ) throw new Error('request should be a function');
-  else makeRequest = request;
+  _makeRequest = request;
   return http;
 };
 

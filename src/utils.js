@@ -1,5 +1,5 @@
 
-var isType = function (type, o) {
+var _isType = function (type, o) {
       return o ? typeof o === type : function (_o) {
         return typeof _o === type;
       };
@@ -13,8 +13,8 @@ export var isArray = Array.isArray || function (o) {
   return o instanceof Array;
 };
 
-export var isString = isType('string');
-export var isFunction = isType('function');
+export var isString = _isType('string');
+export var isFunction = _isType('function');
 
 export function toUnderscoreCase (text) {
   return text.replace(/-/g, '_').replace(/([a-z])([A-Z])/, function (matched, a, b) { return a + '_' + b; }).toLowerCase();
@@ -160,4 +160,49 @@ function _unraise (paths) {
 
 export function joinPaths () {
   return _joinPaths( _unraise(arraySlice.call(arguments)) );
+}
+
+export function defer () {
+  var completed = false,
+      fulfilled, value,
+      resolve_listeners = [],
+      reject_listeners = [];
+  return {
+    resolve: function (result) {
+      value = result;
+      completed = true;
+      fulfilled = true;
+      resolve_listeners.forEach(function (listener) {
+        listener(value);
+      });
+      resolve_listeners = null;
+    },
+    reject: function (reason) {
+      value = reason;
+      completed = true;
+      fulfilled = false;
+      reject_listeners.forEach(function (listener) {
+        listener(value);
+      });
+      reject_listeners = null;
+    },
+    promise: {
+      then: function (onResolve, onReject) {
+        if( completed ) {
+          if( fulfilled ) {
+            if( onResolve instanceof Function ) onResolve(value);
+          } else {
+            if( onReject instanceof Function ) onReject(value);
+          }
+          return this;
+        }
+        if( onResolve instanceof Function ) resolve_listeners.push(onResolve);
+        if( onReject instanceof Function ) reject_listeners.push(onReject);
+        return this;
+      },
+      catch: function (onReject) {
+        return this.then(null, onReject);
+      },
+    },
+  };
 }
