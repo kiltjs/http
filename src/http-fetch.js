@@ -1,5 +1,5 @@
 
-import http from './http-wrapper';
+import http from './http-rest';
 import xmlRequest from './request-xml';
 import fetchRequest from './request-fetch';
 

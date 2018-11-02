@@ -1,7 +1,7 @@
 /* globals describe, it */
 
 import assert from 'assert';
-import http from '../src/http-wrapper';
+import http from '../src/http-rest';
 
 var params_set = [
   [{ foo: 'bar' }, 'foo=bar'],

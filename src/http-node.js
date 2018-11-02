@@ -2,7 +2,7 @@
 /*eslint no-console: 0*/
 
 var URL = require('url');
-var http = require('./http-wrapper');
+var http = require('./http-rest');
 
 var protocols = {
   http: require('http'),

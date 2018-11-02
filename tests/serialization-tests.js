@@ -4,8 +4,7 @@
 //     deserialize = require('../src/deserialize');
 
 import assert from 'assert';
-import serialize from '../src/serialize';
-import deserialize from '../src/deserialize';
+import {serialize, deserialize} from '../src/query-string';
 
 var serialization_dataset = [
   {
