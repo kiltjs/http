@@ -162,6 +162,30 @@ export function joinPaths () {
   return _joinPaths( _unraise(arraySlice.call(arguments)) );
 }
 
+export function plainOptions (_options_pile, method) {
+  var options_pile = _options_pile ? copy(_options_pile) : [];
+
+  var plain_options = {},
+      options = options_pile.shift();
+
+  while( options ) {
+    merge(plain_options, options);
+    options = options_pile.shift();
+  }
+
+  if(method) plain_options.method = method;
+
+  plain_options.url = joinPaths( _options_pile.reduce(function (paths, options) {
+    if( !options.url ) return paths;
+
+    if( options.url instanceof Function ) return paths.concat( options.url(plain_options) );
+
+    return paths.concat(options.url);
+  }, []) );
+
+  return plain_options;
+}
+
 export function defer () {
   var completed = false,
       fulfilled, value,

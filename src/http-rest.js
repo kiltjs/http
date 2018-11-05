@@ -1,35 +1,11 @@
 
-import {copy, extend, merge, isObject, isString, isFunction, resolveFunctions, joinPaths} from './utils';
+import {copy, extend, merge, isObject, isString, isFunction, resolveFunctions, plainOptions} from './utils';
 import {serialize} from './query-string';
 
 var http_defaults = {},
     _makeRequest = function () {};
 
 var Parole = typeof Promise !== 'undefined' ? Promise : function () {};
-
-function _plainOptions (_options_pile, method) {
-  var options_pile = _options_pile ? copy(_options_pile) : [];
-
-  var plain_options = {},
-      options = options_pile.shift();
-
-  while( options ) {
-    merge(plain_options, options);
-    options = options_pile.shift();
-  }
-
-  if(method) plain_options.method = method;
-
-  plain_options.url = joinPaths( _options_pile.reduce(function (paths, options) {
-    if( !options.url ) return paths;
-
-    if( options.url instanceof Function ) return paths.concat( options.url(plain_options) );
-
-    return paths.concat(options.url);
-  }, []) );
-
-  return plain_options;
-}
 
 function _getInterceptorsProcessor (interceptors, resolve, reject, is_error) {
   var running_error = is_error === true;
@@ -66,7 +42,7 @@ var isFormData = typeof FormData === 'function' ? function (x) {
 } : function () { return false; };
 
 function http (url, _config, data) {
-  var config = _plainOptions([http_defaults, _config || {}]);
+  var config = plainOptions([http_defaults, _config || {}]);
 
   config = copy( isObject(url) ? url : config || {} );
   config.method = config.method ? config.method.toUpperCase() : 'GET';
@@ -155,15 +131,15 @@ function httpBase (target, options, options_pile) {
   var _requestMethod = function (method, has_data) {
         return has_data ? function (url, data, _options) {
           // if( url && typeof url === 'object' ) { _options = data; data = url; url = null; }
-          _options = _plainOptions(
-            _options ? options_pile.concat(Object.create(_options)) : options_pile
+          _options = plainOptions(
+            _options ? options_pile.concat(copy(_options)) : options_pile
           , method );
           // if( url ) _options.url = url;
           return http( url, _options, data );
         } : function (url, _options) {
           // if( url && typeof url === 'object' ) { _options = url; url = null; }
-          _options = _plainOptions(
-            _options ? options_pile.concat(Object.create(_options)) : options_pile
+          _options = plainOptions(
+            _options ? options_pile.concat(copy(_options)) : options_pile
           , method );
           // if( url ) _options.url = url;
           return http( url, _options );
@@ -184,7 +160,7 @@ function httpBase (target, options, options_pile) {
       return httpBase( _requestMethod('get'), options, options_pile.concat(options) );
     },
     config: function (_options) {
-      if( _options === undefined ) return _plainOptions( options_pile.concat(options) );
+      if( _options === undefined ) return plainOptions( options_pile.concat(options) );
       merge( options, _options );
     },
     addInterceptor: function (interceptor_definitions) {
