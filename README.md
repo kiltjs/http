@@ -70,13 +70,13 @@ $http.delete('/items/:itemId');
 ### Base configurations
 
 ``` js
-var httpItems = $http.base('items');
+var http_items = $http.base('items');
 
-httpItems.post({ prop1: 'value1' });
+http_items.post({ prop1: 'value1' });
 
-httpItems.get(itemId);
+http_items.get(itemId);
 
-httpItems.put(itemId, {  prop1: 'another value' });
+http_items.put(itemId, {  prop1: 'another value' });
 
-httpItems.delete(itemId);
+http_items.delete(itemId);
 ```
