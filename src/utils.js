@@ -175,13 +175,13 @@ export function plainOptions (_options_pile, method) {
 
   if(method) plain_options.method = method;
 
-  plain_options.url = joinPaths( _options_pile.reduce(function (paths, options) {
-    if( !options.url ) return paths;
-
-    if( options.url instanceof Function ) return paths.concat( options.url(plain_options) );
-
-    return paths.concat(options.url);
-  }, []) );
+  // plain_options.url = joinPaths( _options_pile.reduce(function (paths, options) {
+  //   if( !options.url ) return paths;
+  //
+  //   if( options.url instanceof Function ) return paths.concat( options.url(plain_options) );
+  //
+  //   return paths.concat(options.url);
+  // }, []) );
 
   return plain_options;
 }

@@ -15,7 +15,6 @@ describe('http:url', function() {
     it( urls[0] + ' -> ' + urls[1] , function (done) {
       http
         .useRequest(function (config, resolve) {
-          console.log('http:url', config);
           resolve(config);
         })
         .get(urls[0])
@@ -48,7 +47,6 @@ describe('http:url_base', function() {
         .base(urls_dataset[i][0])
         .get(urls[0])
         .then(function (config) {
-          console.log('http:url_base', config);
           assert.strictEqual( config.url, urls[1] );
           done();
         }, function (err) {
