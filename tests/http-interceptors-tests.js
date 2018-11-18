@@ -58,7 +58,7 @@ describe('http:interceptors', function() {
 
   _http.addInterceptor({
     response: function (res) {
-      console.log('addInterceptor.response');
+      // console.log('addInterceptor.response');
       throw res;
     },
   });

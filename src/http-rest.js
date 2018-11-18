@@ -1,5 +1,5 @@
 
-import {copy, extend, merge, isObject, isString, isFunction, resolveFunctions, plainOptions} from './utils';
+import {copy, extend, merge, isObject, isString, isFunction, resolveFunctions, plainOptions, joinPaths} from './utils';
 import {serialize} from './query-string';
 
 var http_defaults = {},
@@ -101,10 +101,9 @@ function http (url, _config, data) {
   //   res_error_interceptors.length ? _getInterceptorsProcessor(res_error_interceptors, deferred.resolve, deferred.reject) : deferred.resolve
   // );
 
-  var controller = new Parole(function (resolve, _reject) {
-        // if( req_interceptors.length ) _getInterceptorsProcessor(req_interceptors, resolve, reject)(config);
-        // else resolve(config);
-        resolve(config);
+  var controller = new Parole(function (resolve, reject) {
+        if( req_interceptors.length ) _getInterceptorsProcessor(req_interceptors, resolve, reject)(config);
+        else resolve(config);
       })
       .then(function (config) {
         return new Parole(function (resolve, reject) {
@@ -114,6 +113,14 @@ function http (url, _config, data) {
           );
         });
       });
+
+  // var controller = new Parole(function (resolve, reject) {
+  //   request = _makeRequest(config,
+  //     resolve, reject
+  //     // res_interceptors.length ? _getInterceptorsProcessor(res_interceptors, resolve, reject, false) : resolve,
+  //     // res_error_interceptors.length ? _getInterceptorsProcessor(res_error_interceptors, resolve, reject, true) : reject
+  //   );
+  // });
 
   controller.config = config;
   controller.abort = function () {
@@ -135,14 +142,14 @@ function httpBase (target, options, options_pile) {
             _options ? options_pile.concat(copy(_options)) : options_pile
           , method );
           // if( url ) _options.url = url;
-          return http( url, _options, data );
+          return http( options.url ? joinPaths(options.url, url) : url, _options, data );
         } : function (url, _options) {
           // if( url && typeof url === 'object' ) { _options = url; url = null; }
           _options = plainOptions(
             _options ? options_pile.concat(copy(_options)) : options_pile
           , method );
           // if( url ) _options.url = url;
-          return http( url, _options );
+          return http( options.url ? joinPaths(options.url, url) : url, _options );
         };
       };
 
@@ -168,9 +175,9 @@ function httpBase (target, options, options_pile) {
       options.interceptors.push(interceptor_definitions);
     },
     responseData: http.responseData,
-    useRequest: function (request) {
-      if( !isFunction(request) ) throw new Error('request should be a function');
-      _makeRequest = request;
+    useRequest: function (__makeRequest) {
+      if( !isFunction(__makeRequest) ) throw new Error('_makeRequest should be a function');
+      _makeRequest = __makeRequest;
       return target;
     },
   });
@@ -180,9 +187,9 @@ http.base = httpBase;
 httpBase(http, http_defaults, []);
 
 // http.usePromise = function (P) { Parole = P; return http; };
-http.useRequest = function (request) {
-  if( !isFunction(request) ) throw new Error('request should be a function');
-  _makeRequest = request;
+http.useRequest = function (__makeRequest) {
+  if( !isFunction(__makeRequest) ) throw new Error('_makeRequest should be a function');
+  _makeRequest = __makeRequest;
   return http;
 };
 
