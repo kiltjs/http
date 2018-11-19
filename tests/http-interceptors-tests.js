@@ -69,7 +69,7 @@ describe('http:interceptors', function() {
     }).get('foo/bar?foo=bar').catch(function (res) {
       assert.deepEqual(res, expected_response);
       done();
-    });
+    }).catch(done);
   });
 
 });

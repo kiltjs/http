@@ -42,14 +42,20 @@ var isFormData = typeof FormData === 'function' ? function (x) {
 } : function () { return false; };
 
 function http (url, _config, data) {
-  var config = plainOptions([http_defaults, _config || {}]);
+  if( isObject(url) ) {
+    data = _config;
+    _config = url;
+    url = null;
+  }
 
-  config = copy( isObject(url) ? url : config || {} );
+  var config = plainOptions([http_defaults, _config || {}, url ? { url: [url] } : {}]);
+
+  if( config.url instanceof Array ) config.url = joinPaths(config.url);
+
   config.method = config.method ? config.method.toUpperCase() : 'GET';
   config.timestamp = new Date().getTime();
 
-  if( !isString(url) ) throw new Error('url must be a string');
-  // config.url = url === config ? config.url : url;
+  if( !isString(config.url) ) throw new Error('url must be a string');
 
   data = data || config.data || config.json;
 
@@ -64,9 +70,8 @@ function http (url, _config, data) {
   config = resolveFunctions(config, [config]);
 
   if( config.params ) {
-    url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params );
+    config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params );
   }
-  config.url = url;
 
   var headers = copy(config.headers || {}, 'underscore');
 
@@ -93,14 +98,6 @@ function http (url, _config, data) {
 
   var request = null;
 
-  // var deferred = defer(),
-  //     controller = deferred.promise;
-  //
-  // _makeRequest(config,
-  //   res_interceptors.length ? _getInterceptorsProcessor(res_interceptors, deferred.resolve, deferred.reject) : deferred.resolve,
-  //   res_error_interceptors.length ? _getInterceptorsProcessor(res_error_interceptors, deferred.resolve, deferred.reject) : deferred.resolve
-  // );
-
   var controller = new Parole(function (resolve, reject) {
         if( req_interceptors.length ) _getInterceptorsProcessor(req_interceptors, resolve, reject)(config);
         else resolve(config);
@@ -114,14 +111,6 @@ function http (url, _config, data) {
         });
       });
 
-  // var controller = new Parole(function (resolve, reject) {
-  //   request = _makeRequest(config,
-  //     resolve, reject
-  //     // res_interceptors.length ? _getInterceptorsProcessor(res_interceptors, resolve, reject, false) : resolve,
-  //     // res_error_interceptors.length ? _getInterceptorsProcessor(res_error_interceptors, resolve, reject, true) : reject
-  //   );
-  // });
-
   controller.config = config;
   controller.abort = function () {
     if( request ) request.abort();
@@ -134,24 +123,22 @@ http.responseData = function (response) {
   return response.data;
 };
 
-function httpBase (target, options, options_pile) {
+function _httpBase (target, options, options_pile) {
   var _requestMethod = function (method, has_data) {
-        return has_data ? function (url, data, _options) {
-          // if( url && typeof url === 'object' ) { _options = data; data = url; url = null; }
-          _options = plainOptions(
-            _options ? options_pile.concat(copy(_options)) : options_pile
-          , method );
-          // if( url ) _options.url = url;
-          return http( options.url ? joinPaths(options.url, url) : url, _options, data );
-        } : function (url, _options) {
-          // if( url && typeof url === 'object' ) { _options = url; url = null; }
-          _options = plainOptions(
-            _options ? options_pile.concat(copy(_options)) : options_pile
-          , method );
-          // if( url ) _options.url = url;
-          return http( options.url ? joinPaths(options.url, url) : url, _options );
-        };
-      };
+    return has_data ? function (url, data, _options) {
+
+      return http( plainOptions(
+        options_pile.concat(_options || {}).concat({ method: method, url: [url] })
+      ), data );
+
+    } : function (url, _options) {
+
+      return http( plainOptions(
+        options_pile.concat(_options || {}).concat({ method: method, url: [url] })
+      ) );
+
+    };
+  };
 
   return extend(target, {
     head: _requestMethod('head'),
@@ -163,8 +150,8 @@ function httpBase (target, options, options_pile) {
     options: _requestMethod('options'), // for node
     base: function (url, _options) {
       var options = _options ? Object.create(_options) :{};
-      options.url = url;
-      return httpBase( _requestMethod('get'), options, options_pile.concat(options) );
+      options.url = [url];
+      return _httpBase( _requestMethod('get'), options, options_pile.concat(options) );
     },
     config: function (_options) {
       if( _options === undefined ) return plainOptions( options_pile.concat(options) );
@@ -183,8 +170,8 @@ function httpBase (target, options, options_pile) {
   });
 }
 
-http.base = httpBase;
-httpBase(http, http_defaults, []);
+http.base = _httpBase;
+_httpBase(http, http_defaults, []);
 
 // http.usePromise = function (P) { Parole = P; return http; };
 http.useRequest = function (__makeRequest) {

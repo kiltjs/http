@@ -72,25 +72,25 @@ export function extend (dest, src) {
   return dest;
 }
 
-function _mergeArrays(dest, src, concatArrays) {
-  if( !concatArrays ) return src.map(function (item) { return copy(item); });
-  [].push.apply(dest, src);
-  for( var i = 0, n = src.length ; i < n ; i++ ) {
-    dest.push( dest[i] ? merge(dest[i], src[i]) : copy(src[i]) );
-  }
+function _mergeArrays(dest, src, concat_arrays) {
+  if( !concat_arrays ) return src.map(function (item) { return copy(item); });
+  [].push.apply(dest, src.map(function (item) { return copy(item); }) );
+  // for( var i = 0, n = src.length ; i < n ; i++ ) {
+  //   dest.push( dest[i] ? merge(dest[i], src[i], concat_arrays) : copy(src[i]) );
+  // }
   return dest;
 }
 
-export function merge (dest, src, concatArrays) {
+export function merge (dest, src, concat_arrays) {
   if( typeof dest !== typeof src ) {
     if( isArray(src) ) dest = [];
     else if( typeof src === 'object' ) dest = {};
     else return src;
   }
-  if( isArray(src) ) return _mergeArrays(dest, src, concatArrays);
+  if( isArray(src) ) return _mergeArrays(dest, src, concat_arrays);
   if( typeof src === 'object' ) {
     for( var key in src ) {
-      dest[key] = merge(dest[key], src[key]);
+      dest[key] = merge(dest[key], src[key], concat_arrays);
     }
     return dest;
   }
@@ -162,18 +162,18 @@ export function joinPaths () {
   return _joinPaths( _unraise(arraySlice.call(arguments)) );
 }
 
-export function plainOptions (_options_pile, method) {
+export function plainOptions (_options_pile, _method) {
   var options_pile = _options_pile ? copy(_options_pile) : [];
 
   var plain_options = {},
       options = options_pile.shift();
 
   while( options ) {
-    merge(plain_options, options);
+    merge(plain_options, options, true);
     options = options_pile.shift();
   }
 
-  if(method) plain_options.method = method;
+  // if(method) plain_options.method = method;
 
   // plain_options.url = joinPaths( _options_pile.reduce(function (paths, options) {
   //   if( !options.url ) return paths;
