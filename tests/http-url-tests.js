@@ -23,7 +23,7 @@ describe('http:url', function() {
           done();
         }, function (err) {
           console.log('Unexpected error', err); // eslint-disable-line
-        });
+        }).catch(done);
     });
 
   });
@@ -32,12 +32,12 @@ describe('http:url', function() {
 
 describe('http:url_base', function() {
 
-  var headers_override = [
+  var headers_nested = [
     ['bar', 'foo/bar'],
     ['nested/:nestedId', 'resource/:resourceId/nested/:nestedId'],
   ];
 
-  headers_override.forEach(function (urls, i) {
+  headers_nested.forEach(function (urls, i) {
 
     it( urls[0] + ' + ' + urls_dataset[i][0] + ' -> ' + urls[1] , function (done) {
       http
@@ -51,7 +51,36 @@ describe('http:url_base', function() {
           done();
         }, function (err) {
           console.log('Unexpected error', err); // eslint-disable-line
-        });
+        }).catch(done);
+    });
+
+  });
+
+});
+
+describe('http:url_base_2', function() {
+
+  var headers_nested = [
+    ['bar', 'foobar', 'foo/bar/foobar'],
+    ['nested/:nestedId', 'sub-nested/:subNestedId', 'resource/:resourceId/nested/:nestedId/sub-nested/:subNestedId'],
+  ];
+
+  headers_nested.forEach(function (urls, i) {
+
+    it( urls[0] + ' + ' + urls_dataset[i][0] + ' -> ' + urls[1] , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config);
+        })
+        .base(urls_dataset[i][0])
+        .base(headers_nested[i][0])
+        .get(urls[1])
+        .then(function (config) {
+          assert.strictEqual( config.url, urls[2] );
+          done();
+        }, function (err) {
+          console.log('Unexpected error', err); // eslint-disable-line
+        }).catch(done);
     });
 
   });
