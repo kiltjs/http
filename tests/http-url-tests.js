@@ -12,7 +12,50 @@ describe('http:url', function() {
 
   urls_dataset.forEach(function (urls) {
 
-    it( urls[0] + ' -> ' + urls[1] , function (done) {
+    it('http(url): ' + urls[0] + ' -> ' + urls[1] , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })(urls[0])
+        .then(function (config) {
+          assert.strictEqual( config.url, urls[1] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+    it('http(options): ' + urls[0] + ' -> ' + urls[1] , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })({
+          url: urls[0],
+        })
+        .then(function (config) {
+          assert.strictEqual( config.url, urls[1] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+    it('http(null, options): ' + urls[0] + ' -> ' + urls[1] , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })(null, {
+          url: urls[0],
+        })
+        .then(function (config) {
+          assert.strictEqual( config.url, urls[1] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+    it('http.get(url): ' +  urls[0] + ' -> ' + urls[1] , function (done) {
       http
         .useRequest(function (config, resolve) {
           resolve(config)
@@ -38,12 +81,82 @@ describe('http:url_functions', function() {
     ['foo', function () { return 'bar' }, function () { return 'foobar' }, 'foo/bar/foobar'],
   ].forEach(function (urls) {
 
-    it( urls.slice(0, -1).map( (part) => part instanceof Function ? 'Function' : part ).join('/') + ' -> ' + urls.slice(-1) , function (done) {
+    it('http(null, options): ' + urls.slice(0, -1).map( (part) => part instanceof Function ? 'Function' : part ).join('/') + ' -> ' + urls.slice(-1) , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })( urls.slice(0, -1) )
+        .then(function (config) {
+          assert.strictEqual( config.url, urls.slice(-1)[0] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+    it('http(null, options): ' + urls.slice(0, -1).map( (part) => part instanceof Function ? 'Function' : part ).join('/') + ' -> ' + urls.slice(-1) , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })(null, {
+          url: urls.slice(0, -1),
+        })
+        .then(function (config) {
+          assert.strictEqual( config.url, urls.slice(-1)[0] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+    it('http(options): ' + urls.slice(0, -1).map( (part) => part instanceof Function ? 'Function' : part ).join('/') + ' -> ' + urls.slice(-1) , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })({
+          url: urls.slice(0, -1),
+        })
+        .then(function (config) {
+          assert.strictEqual( config.url, urls.slice(-1)[0] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+    it('http.get: ' + urls.slice(0, -1).map( (part) => part instanceof Function ? 'Function' : part ).join('/') + ' -> ' + urls.slice(-1) , function (done) {
       http
         .useRequest(function (config, resolve) {
           resolve(config)
         })
         .get( urls.slice(0, -1) )
+        .then(function (config) {
+          assert.strictEqual( config.url, urls.slice(-1)[0] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+  })
+
+})
+
+describe('http:url_base_functions', function() {
+
+  [
+    [function () { return 'resource' }, 'foo', function () { return 'bar' }, 'resource/foo/bar'],
+    [function () { return 'resource' }, 'foo', function () { return 'bar' }, 'foobar', 'resource/foo/bar/foobar'],
+    [function () { return 'resource' }, 'foo', function () { return 'bar' }, function () { return 'foobar' }, 'resource/foo/bar/foobar'],
+  ].forEach(function (urls) {
+
+    it( '<base>/' + urls.slice(1, -1).map( (part) => part instanceof Function ? 'Function' : part ).join('/') + ' -> ' + urls.slice(-1) , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })
+        .base( urls[0] )
+        .get( urls.slice(1, -1) )
         .then(function (config) {
           assert.strictEqual( config.url, urls.slice(-1)[0] )
           done()

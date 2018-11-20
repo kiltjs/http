@@ -6,11 +6,15 @@ var _isType = function (type, o) {
     }
 
 export function isObject (o) {
-  return o !== null && typeof o === 'object'
+  return o && typeof o === 'object'
 }
 
 export var isArray = Array.isArray || function (o) {
   return o instanceof Array
+}
+
+export function isPlainObject (o) {
+  return o && !isArray(o) && typeof o === 'object'
 }
 
 export var isString = _isType('string')

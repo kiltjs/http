@@ -1,5 +1,5 @@
 
-import {copy, extend, merge, isArray, isObject, isString, isFunction, resolveFunctions, plainOptions, joinPaths} from './utils'
+import {copy, extend, merge, isArray, isPlainObject, isString, isFunction, resolveFunctions, plainOptions, joinPaths} from './utils'
 import {serialize} from './query-string'
 
 var http_defaults = {},
@@ -42,7 +42,7 @@ var isFormData = typeof FormData === 'function' ? function (x) {
 } : function () { return false }
 
 function http (url, _config, data) {
-  if( isObject(url) ) {
+  if( isPlainObject(url) ) {
     data = _config
     _config = url
     url = null
@@ -134,24 +134,37 @@ http.responseData = function (response) {
   return response.data
 }
 
+var _concat = Array.prototype.concat
+
 function _httpBase (target, options, options_pile) {
   var _requestMethod = function (method, has_data) {
     return has_data ? function (url, data, _options) {
 
+      if( isPlainObject(url) ) {
+        _options = data
+        data = url
+        url = null
+      }
+
       return http( plainOptions(
-        options_pile.concat(_options || {}).concat({
+        _concat.call(options_pile, _options || {}, url ? {
           method: method,
           url: isArray(url) ? url : [url]
-        })
+        } : { method: method })
       ), data )
 
     } : function (url, _options) {
 
+      if( isPlainObject(url) ) {
+        _options = url
+        url = null
+      }
+
       return http( plainOptions(
-        options_pile.concat(_options || {}).concat({
+        _concat.call(options_pile, _options || {}, url ? {
           method: method,
           url: isArray(url) ? url : [url]
-        })
+        } : { method: method })
       ) )
 
     }
