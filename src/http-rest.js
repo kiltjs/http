@@ -173,7 +173,7 @@ function _httpBase (target, options, options_pile) {
 http.base = _httpBase;
 _httpBase(http, http_defaults, []);
 
-// http.usePromise = function (P) { Parole = P; return http; };
+http.usePromise = function (P) { Parole = P; return http; };
 http.useRequest = function (__makeRequest) {
   if( !isFunction(__makeRequest) ) throw new Error('_makeRequest should be a function');
   _makeRequest = __makeRequest;
