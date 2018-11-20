@@ -7,8 +7,6 @@ global.btoa = function (text) {
   return Buffer.from(text).toString('base64')
 }
 
-function _noop () {}
-
 // http.config({
 //   headers: {
 //     cookie: 'foo: bar'
@@ -16,7 +14,7 @@ function _noop () {}
 // });
 
 var headers_dataset = [
-  [{}, { 'Content-Type': 'application/json' }],
+  [{}, {}],
   [{ content_type: 'application/json' }, { 'Content-Type': 'application/json' }],
   [{
     accept: function () {
@@ -32,12 +30,14 @@ describe('http:headers', function() {
 
   headers_dataset.forEach(function (headers) {
 
-    it( '[' + Object.keys(headers[0]).join(', ') + '] -> ' + JSON.stringify(headers[1]) , function () {
-      http.useRequest(function (config) {
-        assert.deepEqual( config, headers[1] )
+    it( '[' + Object.keys(headers[0]).join(', ') + '] -> ' + JSON.stringify(headers[1]) , function (done) {
+      http.useRequest(function (config, resolve) {
+        assert.deepEqual( config.headers, headers[1] )
+        resolve()
+        done()
       }).get('foo/bar?foo=bar', {
         headers: headers[0]
-      })
+      }).catch(done)
     })
 
   })
@@ -47,21 +47,23 @@ describe('http:headers', function() {
 describe('http:headers_base', function() {
 
   var headers_override = [
-    [{ accept: 'Bearer a0987ys987sy9s87ys' }, { 'Accept': 'Bearer a0987ys987sy9s87ys', 'Content-Type': 'application/json' }],
-    [{ content_type: 'application/xml' }, { 'Accept': 'Bearer a0987ys987sy9s87ys', 'Content-Type': 'application/xml' }],
+    [{ accept: 'Bearer a0987ys987sy9s87ys' }, { 'Accept': 'Bearer a0987ys987sy9s87ys' }],
+    [{ content_type: 'application/xml' }, { 'Content-Type': 'application/xml' }],
     [{ content_type: 'application/xml' }, { 'Accept': 'Bearer a0987ys987sy9s87ys', 'Content-Type': 'application/xml' }],
   ]
 
   headers_override.forEach(function (headers, i) {
 
-    it( '[' + Object.keys(headers[0]).join(', ') + '] -> ' + JSON.stringify(headers[1]) , function () {
-      http.useRequest(function (config) {
-        assert.deepEqual( config, headers[1] )
+    it('(' + i + '): [' + Object.keys(headers[0]).join(', ') + '] -> ' + JSON.stringify(headers[1]) , function (done) {
+      http.useRequest(function (config, resolve) {
+        assert.deepEqual(config.headers, headers[1] )
+        resolve()
+        done()
       }).base(null, {
-        headers: headers_dataset[i]
+        headers: headers_dataset[i][0],
       }).get('foo/bar?foo=bar', {
-        headers: headers[0]
-      }).catch(_noop)
+        headers: headers[0],
+      }).catch(done)
     })
 
   })
@@ -70,12 +72,14 @@ describe('http:headers_base', function() {
 
 describe('http:headers Authorization', function() {
 
-  it('foo:bar -> Basic Zm9vOmJhcg==' , function () {
-    http.useRequest(function (config) {
-      assert.deepEqual( config.headers.authorization, 'Basic Zm9vOmJhcg==')
+  it('foo:bar -> Basic Zm9vOmJhcg==' , function (done) {
+    http.useRequest(function (config, resolve) {
+      assert.deepEqual( config.headers.Authorization, 'Basic Zm9vOmJhcg==')
+      resolve()
+      done()
     }).get('foo/bar?foo=bar', {
       auth: { user: 'foo', pass: 'bar' },
-    }).catch(_noop)
+    }).catch(done)
   })
 
 })

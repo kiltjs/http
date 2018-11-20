@@ -50,6 +50,8 @@ function http (url, _config, data) {
 
   var config = plainOptions([http_defaults, _config || {}, url ? { url: isArray(url) ? url : [url] } : {}])
 
+  console.log('http.headers', config.headers, [http_defaults, _config || {}, url ? { url: isArray(url) ? url : [url] } : {}] )
+
   if( config.url instanceof Array ) config.url = joinPaths( config.url.map(function (_path_part) {
     if( isFunction(_path_part) ) _path_part = _path_part(config)
     if( !isString(_path_part) ) throw new TypeError('url_part should be a String')
@@ -63,11 +65,11 @@ function http (url, _config, data) {
 
   data = data || config.data || config.json
 
-  var is_json = data && 'json' in config || (
+  var is_json = data && ( 'json' in config || (
     typeof data === 'object' && !isBlob(data) && !isFormData(data)
-  )
+  ) )
 
-  config.data = data
+  config.body = is_json && typeof data !== 'string' ? JSON.stringify(data) : data
 
   var interceptors = config.interceptors || []
   delete config.interceptors
@@ -90,7 +92,7 @@ function http (url, _config, data) {
   if( is_json && !headers.content_type ) headers.content_type = 'application/json'
   if( 'content_type' in headers && !headers.content_type ) delete headers.content_type
 
-  headers.accept = headers.accept || headers.content_type || 'application/json'
+  // headers.accept = headers.accept || headers.content_type || 'application/json'
 
   config.headers = copy(headers, 'header')
 
@@ -149,8 +151,9 @@ function _httpBase (target, options, options_pile) {
       return http( plainOptions(
         _concat.call(options_pile, _options || {}, url ? {
           method: method,
+          data: data,
           url: isArray(url) ? url : [url]
-        } : { method: method })
+        } : { method: method, data: data })
       ), data )
 
     } : function (url, _options) {
@@ -179,7 +182,7 @@ function _httpBase (target, options, options_pile) {
     delete: _requestMethod('delete'),
     options: _requestMethod('options'), // for node
     base: function (url, _options) {
-      var options = _options ? Object.create(_options) :{}
+      var options = _options ? copy(_options) :{}
       if( url ) options.url = isArray(url) ? url : [url]
       return _httpBase( _requestMethod('get'), options, options_pile.concat(options) )
     },
