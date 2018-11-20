@@ -54,3 +54,73 @@ describe('http:params', function() {
   })
 
 })
+
+describe('http:params (url)', function() {
+
+  [
+    ['foo', { foo: 'bar' }, 'foo?foo=bar'],
+    ['resource/:resourceId', { foobar: 'test' }, 'resource/:resourceId?foobar=test'],
+  ].forEach(function (urls) {
+
+    it('http(url): ' + urls[0] + ' -> ' + urls[2] , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })(urls[0], { params: urls[1] })
+        .then(function (config) {
+          assert.strictEqual( config.url, urls[2] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+    it('http(options): ' + urls[0] + ' -> ' + urls[2] , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })({
+          url: urls[0],
+          params: urls[1],
+        })
+        .then(function (config) {
+          assert.strictEqual( config.url, urls[2] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+    it('http(null, options): ' + urls[0] + ' -> ' + urls[2] , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })(null, {
+          url: urls[0],
+          params: urls[1],
+        })
+        .then(function (config) {
+          assert.strictEqual( config.url, urls[2] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+    it('http.get(url): ' +  urls[0] + ' -> ' + urls[2] , function (done) {
+      http
+        .useRequest(function (config, resolve) {
+          resolve(config)
+        })
+        .get(urls[0], { params: urls[1] })
+        .then(function (config) {
+          assert.strictEqual( config.url, urls[2] )
+          done()
+        }, function (err) {
+          console.log('Unexpected error', err) // eslint-disable-line
+        }).catch(done)
+    })
+
+  })
+
+})

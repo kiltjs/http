@@ -50,7 +50,7 @@ function http (url, _config, data) {
 
   var config = plainOptions([http_defaults, _config || {}, url ? { url: isArray(url) ? url : [url] } : {}])
 
-  console.log('http.headers', config.headers, [http_defaults, _config || {}, url ? { url: isArray(url) ? url : [url] } : {}] )
+  // console.log('http.headers', config.headers, [http_defaults, _config || {}, url ? { url: isArray(url) ? url : [url] } : {}] )
 
   if( config.url instanceof Array ) config.url = joinPaths( config.url.map(function (_path_part) {
     if( isFunction(_path_part) ) _path_part = _path_part(config)
