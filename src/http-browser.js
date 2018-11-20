@@ -1,7 +1,7 @@
 
-import http from './http-rest';
-import xmlRequest from './request-xml';
+import http from './http-rest'
+import xmlRequest from './request-xml'
 
-http.useRequest(xmlRequest);
+http.useRequest(xmlRequest)
 
-export default http;
+export default http

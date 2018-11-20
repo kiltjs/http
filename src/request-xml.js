@@ -1,38 +1,38 @@
 /* global ActiveXObject */
 
-import {toUnderscoreCase, parseContentType} from './utils';
+import {toUnderscoreCase, parseContentType} from './utils'
 
 var parseData = {
   json: function (data) {
-    return JSON.parse(data);
+    return JSON.parse(data)
   }
-};
+}
 
 function _getXMLHeaders (request) {
-  var headers = {};
+  var headers = {}
   request.getAllResponseHeaders().split('\n').forEach(function (headerLine) {
-    var matched = headerLine.match(/(.*?):(.*)/);
+    var matched = headerLine.match(/(.*?):(.*)/)
     if( matched ) {
-      headers[toUnderscoreCase(matched[1])] = matched[2].trim();
+      headers[toUnderscoreCase(matched[1])] = matched[2].trim()
     }
-  });
+  })
 
-  return headers;
+  return headers
 }
 
 function xmlRequest (config, resolve, reject) {
 
-  var xhr = null;
+  var xhr = null
 
   try { // Firefox, Opera 8.0+, Safari
-    xhr = new XMLHttpRequest();
+    xhr = new XMLHttpRequest()
   } catch (e) { // Internet Explorer
-    try { xhr = new ActiveXObject('Msxml2.XMLHTTP'); }  // jshint ignore:line
-    catch (er) { xhr = new ActiveXObject('Microsoft.XMLHTTP'); }  // jshint ignore:line
+    try { xhr = new ActiveXObject('Msxml2.XMLHTTP') }
+    catch (er) { xhr = new ActiveXObject('Microsoft.XMLHTTP') }
   }
-  if( xhr === null ) { throw 'Browser does not support HTTP Request'; }
+  if( xhr === null ) { throw 'Browser does not support HTTP Request' }
 
-  if( config.with_credentials || config.withCredentials || config.credentials === 'include' ) xhr.withCredentials = true;
+  if( config.with_credentials || config.withCredentials || config.credentials === 'include' ) xhr.withCredentials = true
 
   xhr.onreadystatechange = function() {
     if( xhr.readyState === 'complete' || xhr.readyState === 4 ) {
@@ -45,36 +45,37 @@ function xmlRequest (config, resolve, reject) {
             statusText: xhr.statusText,
             headers: headers,
             data: type === 'xml' ? xhr.responseXML : (parseData[type] ? parseData[type](xhr.responseText) : xhr.responseText),
-          };
+          }
 
       if( xhr.status >= 200 && xhr.status < 400 ) {
-        resolve( response );
+        resolve( response )
       } else {
-        reject( response );
+        reject( response )
       }
-    }
-  };
-
-  if( 'timeout' in config ) xhr.timeout = config.timeout;
-  xhr.ontimeout = function () {
-    reject('timeout');
-  };
-
-  xhr.open(config.method, config.url, true);
-
-  if( config.headers ) {
-    for( var key in config.headers ) {
-      xhr.setRequestHeader( key, config.headers[key] );
     }
   }
 
-  xhr.send( config.body );
+  if( 'timeout' in config ) xhr.timeout = config.timeout
+
+  xhr.ontimeout = function () {
+    reject('timeout')
+  }
+
+  xhr.open(config.method, config.url, true)
+
+  if( config.headers ) {
+    for( var key in config.headers ) {
+      xhr.setRequestHeader( key, config.headers[key] )
+    }
+  }
+
+  xhr.send( config.body )
 
   return {
     abort: function () {
-      xhr.abort();
+      xhr.abort()
     },
-  };
+  }
 }
 
-export default xmlRequest;
+export default xmlRequest

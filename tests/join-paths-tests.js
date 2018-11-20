@@ -1,7 +1,7 @@
 /* globals describe, it */
 
 var assert = require('assert'),
-    joinPaths = require('../src/utils').joinPaths;
+    joinPaths = require('../src/utils').joinPaths
 
 describe('joinPaths', function() {
 
@@ -74,13 +74,13 @@ describe('joinPaths', function() {
       result: 'foo/bar',
       paths: ['.', './foo/bar'],
     },
-  ];
+  ]
 
   test_paths.forEach(function (test) {
     it( test.paths.join(' + ') + ' = ' + test.result , function () {
-      assert.strictEqual( joinPaths.apply(null, test.paths), test.result, 'arguments');
-      assert.strictEqual( joinPaths(test.paths), test.result, 'Array');
-    });
-  });
+      assert.strictEqual( joinPaths.apply(null, test.paths), test.result, 'arguments')
+      assert.strictEqual( joinPaths(test.paths), test.result, 'Array')
+    })
+  })
 
-});
+})

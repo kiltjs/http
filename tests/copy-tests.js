@@ -1,7 +1,7 @@
 /* globals describe, it */
 
-import assert from 'assert';
-import {copy, toCamelCase, toUnderscoreCase, toHeaderCase} from '../src/utils';
+import assert from 'assert'
+import {copy, toCamelCase, toUnderscoreCase, toHeaderCase} from '../src/utils'
 
 describe('copy', function() {
 
@@ -15,12 +15,12 @@ describe('copy', function() {
   ].forEach(function (data) {
 
     it( JSON.stringify(data) , function () {
-      assert.deepEqual( copy(data), data );
-    });
+      assert.deepEqual( copy(data), data )
+    })
 
-  });
+  })
 
-});
+})
 
 describe('copy:camelCase', function() {
 
@@ -32,16 +32,16 @@ describe('copy:camelCase', function() {
   ].forEach(function (data) {
 
     it( JSON.stringify(data[0]) + ' -> ' + JSON.stringify(data[1]) /*+ ' = ' + JSON.stringify( copy(data[0], toCamelCase) ) */, function () {
-      assert.deepEqual( copy(data[0], toCamelCase), data[1] );
-    });
+      assert.deepEqual( copy(data[0], toCamelCase), data[1] )
+    })
 
     it( JSON.stringify(data[0]) + ' -> ' + JSON.stringify(data[1]) /*+ ' = ' + JSON.stringify( copy(data[0], 'camel') ) */, function () {
-      assert.deepEqual( copy(data[0], 'camel'), data[1] );
-    });
+      assert.deepEqual( copy(data[0], 'camel'), data[1] )
+    })
 
-  });
+  })
 
-});
+})
 
 describe('copy:underscore', function() {
 
@@ -54,16 +54,16 @@ describe('copy:underscore', function() {
   ].forEach(function (data) {
 
     it( JSON.stringify(data[0]) + ' -> ' + JSON.stringify(data[1]) /*+ ' = ' + JSON.stringify( copy(data[0], toUnderscoreCase) ) */, function () {
-      assert.deepEqual( copy(data[0], toUnderscoreCase), data[1] );
-    });
+      assert.deepEqual( copy(data[0], toUnderscoreCase), data[1] )
+    })
 
     it( JSON.stringify(data[0]) + ' -> ' + JSON.stringify(data[1]) /*+ ' = ' + JSON.stringify( copy(data[0], 'underscore') ) */, function () {
-      assert.deepEqual( copy(data[0], 'underscore'), data[1] );
-    });
+      assert.deepEqual( copy(data[0], 'underscore'), data[1] )
+    })
 
-  });
+  })
 
-});
+})
 
 describe('copy:header', function() {
 
@@ -76,13 +76,13 @@ describe('copy:header', function() {
   ].forEach(function (data) {
 
     it( JSON.stringify(data[0]) + ' -> ' + JSON.stringify(data[1]) /*+ ' = ' + JSON.stringify( copy(data[0], toHeaderCase) ) */, function () {
-      assert.deepEqual( copy(data[0], toHeaderCase), data[1] );
-    });
+      assert.deepEqual( copy(data[0], toHeaderCase), data[1] )
+    })
 
     it( JSON.stringify(data[0]) + ' -> ' + JSON.stringify(data[1]) /*+ ' = ' + JSON.stringify( copy(data[0], 'header') ) */, function () {
-      assert.deepEqual( copy(data[0], 'header'), data[1] );
-    });
+      assert.deepEqual( copy(data[0], 'header'), data[1] )
+    })
 
-  });
+  })
 
-});
+})
