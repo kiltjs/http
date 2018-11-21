@@ -1,6 +1,6 @@
 {
   "name": "@kilt/http",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "http jstool example",
   "main": "http-node.js",
   "scripts": {
