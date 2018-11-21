@@ -63,18 +63,29 @@ function http (url, _config, data) {
 
   if( !isString(config.url) ) throw new Error('url must be a string')
 
-  data = data || config.data || config.json
+  var _interceptors = config.interceptors || []
+  delete config.interceptors
+
+  var _data = data || config.data
+  var _json = config.json
+
+  data = _data || _json
 
   var is_json = data && ( 'json' in config || (
     typeof data === 'object' && !isBlob(data) && !isFormData(data)
   ) )
 
-  config.body = is_json && typeof data !== 'string' ? JSON.stringify(data) : data
-
-  var interceptors = config.interceptors || []
-  delete config.interceptors
+  // should not be resolved
+  delete config.data
+  delete config.json
 
   config = resolveFunctions(config, [config])
+
+  if( _data !== undefined ) config.data = _data
+  if( _json !== undefined ) config.json = _json
+
+  config.is_json = is_json
+  config.body = is_json && typeof data !== 'string' ? JSON.stringify(data) : data
 
   if( config.params ) {
     config.url += ( /\?/.test(config.url) ? '&' : '?' ) + serialize( config.params )
@@ -101,7 +112,7 @@ function http (url, _config, data) {
       res_interceptors = [],
       res_error_interceptors = []
 
-  interceptors.forEach(function (interceptor) {
+  _interceptors.forEach(function (interceptor) {
     if( interceptor.request ) req_interceptors.push(interceptor.request)
     // if( interceptor.requestError ) req_error_interceptors.push(interceptor.requestError);
     if( interceptor.response ) res_interceptors.push(interceptor.response)
