@@ -20,9 +20,7 @@ describe('http:url', function() {
         .then(function (config) {
           assert.strictEqual( config.url, urls[1] )
           done()
-        }, function (err) {
-          console.log('Unexpected error', err) // eslint-disable-line
-        }).catch(done)
+        })
     })
 
     it('http(options): ' + urls[0] + ' -> ' + urls[1] , function (done) {

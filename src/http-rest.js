@@ -7,25 +7,26 @@ var http_defaults = {},
 
 var Parole = typeof Promise !== 'undefined' ? Promise : function () {}
 
-function _getInterceptorsProcessor (interceptors, resolve, reject, is_error) {
-  var running_error = is_error === true
-
+function _getInterceptorsProcessor (interceptors, resolve_fn, reject_fn, resolve, reject, is_error) {
+  
   function _processInterceptor (_res, interceptor) {
-    if( !interceptor ) return (running_error ? reject : resolve)(_res)
+    if( !interceptor ) return (is_error ? reject : resolve)(_res)
 
-    var result = undefined
+    var result = undefined,
+        _runInterceptor = interceptor[is_error ? reject_fn : resolve_fn]
+
+    if( !_runInterceptor ) return _processInterceptor(_res, interceptors.shift())
 
     try{
-      result = interceptor(_res)
+      result = _runInterceptor(_res)
       if( result === undefined ) result = _res
-      else running_error = false
+      is_error = false
     } catch (err) {
       result = err
-      running_error = true
+      is_error = true
     }
 
-    if( running_error !== is_error ) (running_error ? reject : resolve)(_res)
-    else _processInterceptor(result, interceptors.shift())
+    _processInterceptor(result, interceptors.shift())
   }
 
   return function (res) {
@@ -107,34 +108,20 @@ function http (url, _config, data) {
 
   config.headers = copy(headers, 'header')
 
-  var req_interceptors = [],
-      // req_error_interceptors = [],
-      res_interceptors = [],
-      res_error_interceptors = []
-
-  _interceptors.forEach(function (interceptor) {
-    if( interceptor.request ) req_interceptors.push(interceptor.request)
-    // if( interceptor.requestError ) req_error_interceptors.push(interceptor.requestError);
-    if( interceptor.response ) res_interceptors.push(interceptor.response)
-    if( interceptor.responseError ) res_error_interceptors.push(interceptor.responseError)
-  })
-
   var request = null
 
-  var controller = new Parole(function (resolve, reject) {
-        if( req_interceptors.length ) _getInterceptorsProcessor(req_interceptors, resolve, reject)(config)
-        else resolve(config)
-      })
-      .then(function (config) {
-        return new Parole(function (resolve, reject) {
-          request = _makeRequest(config,
-            res_interceptors.length ? _getInterceptorsProcessor(res_interceptors, resolve, reject, false) : resolve,
-            res_error_interceptors.length ? _getInterceptorsProcessor(res_error_interceptors, resolve, reject, true) : reject
-          )
-        })
-      })
+  var req_config = _interceptors.reduce(function (_config, _interceptor) {
+    if( !_interceptor.config ) return _config
+    var result = _interceptor.config(_config)
+    return result === undefined ? _config : result
+  }, config)
 
-  controller.config = config
+  var controller = new Parole(function (resolve, reject) {
+    request = _makeRequest(req_config,
+      _getInterceptorsProcessor(_interceptors, 'response', 'responseError', resolve, reject, false),
+      _getInterceptorsProcessor(_interceptors, 'response', 'responseError', resolve, reject, true)
+    )
+  })
 
   controller.abort = function () {
     if( request ) request.abort()
