@@ -20,6 +20,10 @@ export function isPlainObject (o) {
 export var isString = _isType('string')
 export var isFunction = _isType('function')
 
+export function isThenable (o) {
+  return (isObject(o) || isFunction(o)) && isFunction(o.then)
+}
+
 export function toUnderscoreCase (text) {
   return text.replace(/-/g, '_').replace(/([a-z])([A-Z])/, function (matched, a, b) { return a + '_' + b }).toLowerCase()
 }

@@ -1,5 +1,5 @@
 
-import {copy, extend, merge, isArray, isPlainObject, isString, isFunction, resolveFunctions, plainOptions, joinPaths} from './utils'
+import {copy, extend, merge, isArray, isPlainObject, isString, isFunction, isThenable, resolveFunctions, plainOptions, joinPaths} from './utils'
 import {serialize} from './query-string'
 
 var http_defaults = {},
@@ -116,28 +116,26 @@ function http (url, _config, data) {
     return result === undefined ? _config : result
   }, config)
 
-  var controller = _interceptors.reduce(function (req, _interceptor) {
+  var req = _interceptors.reduce(function (req, _interceptor) {
     if( req ) return req
     if( !_interceptor.request ) return
     return _interceptor.request(req_config)
   }, undefined)
 
-  if( controller && (typeof controller !== 'object' || !isFunction(controller.then)) ) {
-    controller = Parole.resolve(controller)
-  }
+  if( req && !isThenable(req) ) req = Parole.resolve(req)
 
-  controller = controller || new Parole(function (resolve, reject) {
+  req = req || new Parole(function (resolve, reject) {
     request = _makeRequest(req_config,
       _getInterceptorsProcessor(_interceptors, 'response', 'responseError', resolve, reject, false),
       _getInterceptorsProcessor(_interceptors, 'response', 'responseError', resolve, reject, true)
     )
   })
 
-  controller.abort = function () {
+  req.abort = function () {
     if( request ) request.abort()
   }
 
-  return controller
+  return req
 }
 
 http.responseData = function (response) {
