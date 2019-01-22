@@ -119,7 +119,7 @@ function http (url, _config, data) {
   var controller = _interceptors.reduce(function (req, _interceptor) {
     if( req ) return req
     if( !_interceptor.request ) return
-    return _interceptor.request(_config)
+    return _interceptor.request(req_config)
   }, undefined)
 
   if( controller && (typeof controller !== 'object' || !isFunction(controller.then)) ) {
