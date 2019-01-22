@@ -116,7 +116,17 @@ function http (url, _config, data) {
     return result === undefined ? _config : result
   }, config)
 
-  var controller = new Parole(function (resolve, reject) {
+  var controller = _interceptors.reduce(function (req, _interceptor) {
+    if( req ) return req
+    if( !_interceptor.request ) return
+    return _interceptor.request(_config)
+  }, undefined)
+
+  if( controller && (typeof controller !== 'object' || !isFunction(controller.then)) ) {
+    controller = Parole.resolve(controller)
+  }
+
+  controller = controller || new Parole(function (resolve, reject) {
     request = _makeRequest(req_config,
       _getInterceptorsProcessor(_interceptors, 'response', 'responseError', resolve, reject, false),
       _getInterceptorsProcessor(_interceptors, 'response', 'responseError', resolve, reject, true)

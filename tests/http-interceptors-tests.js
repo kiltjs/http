@@ -3,7 +3,7 @@
 import assert from 'assert'
 import http from '../src/http-rest'
 
-function _noop () {}
+// function _noop () {}
 
 http.addInterceptor({
   config: function (config) {
@@ -20,7 +20,7 @@ describe('http:interceptors root', function() {
   })
 })
 
-describe('http:interceptors', function() {
+describe('http:interceptors config:', function() {
 
   var _http = http.base()
 
@@ -50,6 +50,65 @@ describe('http:interceptors', function() {
       assert.deepEqual(config.root_foobar, true)
       done()
     }).get('foo/bar?foo=bar')
+  })
+
+})
+
+describe('http:interceptors request:', function() {
+
+  var _http = http.base()
+
+  _http.addInterceptor({
+    request: function (_res) {
+      // console.log('addInterceptor.response');
+      return 'response replaced'
+    },
+  })
+
+  it('base config.foobar' , function (done) {
+    _http.useRequest(function (_config, resolve) {
+      resolve('original response')
+    }).get('foo/bar?foo=bar').then(function (res) {
+      assert.deepEqual(res, 'response replaced')
+      done()
+    })
+  })
+
+})
+
+describe('http:interceptors request:thenable', function() {
+
+  var _http = http.base()
+
+  _http.addInterceptor({
+    request: function (_res) {
+      // console.log('addInterceptor.response');
+      var _listeners = []
+
+      function _resolve (result) {
+        _listeners.forEach(function (listener) {
+          listener(result)
+        })
+      }
+      process.nextTick(function () {
+        _resolve('response replaced')
+      })
+
+      return {
+        then: function (fn) {
+          _listeners.push(fn)
+        }
+      }
+    },
+  })
+
+  it('base config.foobar' , function (done) {
+    _http.useRequest(function (_config, resolve) {
+      resolve('original response')
+    }).get('foo/bar?foo=bar').then(function (res) {
+      assert.deepEqual(res, 'response replaced')
+      done()
+    })
   })
 
 })
