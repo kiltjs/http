@@ -55,7 +55,11 @@ function xmlRequest (config, resolve, reject) {
     }
   }
 
+  try { // preventing IE errors
   if( 'timeout' in config ) xhr.timeout = config.timeout
+  } catch(_e) {
+    console.error('error setting timeout for ajax request', config) // eslint-disable-line
+  }
 
   xhr.ontimeout = function () {
     reject('timeout')
@@ -69,7 +73,7 @@ function xmlRequest (config, resolve, reject) {
     }
   }
 
-  xhr.send( config.body )
+  xhr.send( config.body || null )
 
   return {
     abort: function () {
