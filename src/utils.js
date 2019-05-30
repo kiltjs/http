@@ -176,7 +176,7 @@ export function joinPaths () {
 export function plainUrl (url_parts, config) {
   return joinPaths( url_parts.map(function (_path_part) {
     if( isFunction(_path_part) ) _path_part = _path_part(config)
-    if( !isString(_path_part) ) throw new TypeError('url_part should be a String')
+    if( !isString(_path_part) ) throw new TypeError('url_part should be a String, but found: ' + typeof _path_part )
     return _path_part
   }) )
 }

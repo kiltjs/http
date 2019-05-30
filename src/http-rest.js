@@ -1,6 +1,6 @@
 
 import {copy, extend, merge, isArray, isPlainObject, isString, isFunction, isThenable, resolveFunctions, plainOptions, plainUrl} from './utils'
-import {serialize} from './query-string'
+import {serialize, deserialize} from './query-string'
 
 var http_defaults = {},
     _makeRequest = function () {}
@@ -190,17 +190,29 @@ function _httpBase (target, options, options_pile) {
     patch: _requestMethod('patch', true),
     delete: _requestMethod('delete'),
     options: _requestMethod('options'), // for node
-    base: function (url, _options) {
-      var options = _options ? copy(_options) :{}
-      if( url ) options.url = isArray(url) ? url : [url]
-      return _httpBase( _requestMethod('get'), options, options_pile.concat(options) )
+    base: function (url, options) {
+      var _options = options ? copy(options) : {}
+
+      if( typeof url === 'string' && url.indexOf('?') >= 0 ) {
+        url = url.split(/\?(.*)/)
+        _options.url = [url[0]]
+        _options.params = merge( deserialize(url[1]), _options.params || {})
+      } else if( url ) {
+        _options.url = isArray(url) ? url : [url]
+      }
+      return _httpBase( _requestMethod('get'), _options, options_pile.concat(_options) )
     },
     config: function (_options) {
       if( _options === undefined ) return _plainConfig( options_pile )
       merge( options, _options )
     },
-    getUrl: function (params) {
-      var _config = _plainConfig( options_pile.concat({ params: params }) )
+    getUrl: function (url, params) {
+      if( typeof url === 'object' ) {
+        params = url
+        url = null
+      }
+
+      var _config = _plainConfig( options_pile.concat( url ? { url: [url], params: params } : { params: params } ) )
 
       return _fullUrl(
         _config.url,
