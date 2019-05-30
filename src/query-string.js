@@ -27,7 +27,7 @@ export function deserialize (query_string) {
     var parts = param.split(/=(.*)/),
 				keys = parts[0].replace(/^\[|\]$/g, '').replace(/\]\[|\[|\]/g, '.').split('.')
 
-    _qsKey(data, keys, decodeURIComponent(parts[1]) )
+    _qsKey(data, keys, parts[1] === undefined ? '' : decodeURIComponent(parts[1]) )
   })
 
   return data

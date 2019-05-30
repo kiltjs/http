@@ -20,6 +20,11 @@ var serialization_dataset = [
     data: { foo: 'bar', list: ['foo', 'bar'] },
   },
   {
+    qs: 'foobar',
+    formal_qs: 'foobar=',
+    data: { foobar: '' },
+  },
+  {
     qs: 'foo=bar&list[]=foo&list[]=bar&list[2]=hola&foo-bar=gogogo',
     formal_qs: 'foo=bar&list[]=foo&list[]=bar&list[]=hola&foo_bar=gogogo',
     data: { foo: 'bar', list: ['foo', 'bar', 'hola'], foo_bar: 'gogogo' },
@@ -71,7 +76,7 @@ describe('deserialize -> deserialize', () => {
 
 })
 
-describe('deserialize -> deserialize (formal_qs)', () => {
+describe('deserialize -> serialize (formal_qs)', () => {
 
   serialization_dataset.forEach(function (test) {
     var qs = test.formal_qs || test.qs

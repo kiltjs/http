@@ -173,6 +173,14 @@ export function joinPaths () {
   return _joinPaths( _unraise(arraySlice.call(arguments)) )
 }
 
+export function plainUrl (url_parts, config) {
+  return joinPaths( url_parts.map(function (_path_part) {
+    if( isFunction(_path_part) ) _path_part = _path_part(config)
+    if( !isString(_path_part) ) throw new TypeError('url_part should be a String')
+    return _path_part
+  }) )
+}
+
 export function plainOptions (_options_pile, _method) {
   var options_pile = _options_pile ? copy(_options_pile) : []
 

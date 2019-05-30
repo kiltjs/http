@@ -1,5 +1,5 @@
 
-import {copy, extend, merge, isArray, isPlainObject, isString, isFunction, isThenable, resolveFunctions, plainOptions, joinPaths} from './utils'
+import {copy, extend, merge, isArray, isPlainObject, isString, isFunction, isThenable, resolveFunctions, plainOptions, plainUrl} from './utils'
 import {serialize} from './query-string'
 
 var http_defaults = {},
@@ -34,6 +34,17 @@ function _getInterceptorsProcessor (interceptors, resolve_fn, reject_fn, resolve
   }
 }
 
+function _plainConfig (options_pile) {
+  var config = plainOptions(options_pile)
+  if( config.url instanceof Array ) config.url = plainUrl(config.url, config)
+  return config
+}
+
+function _fullUrl (url, params) {
+  if( !params || !Object.keys(params).length ) return url
+  return url + ( /\?/.test(url) ? '&' : '?' ) + serialize(params)
+}
+
 var isBlob = typeof Blob === 'function' ? function (x) {
   return Blob.prototype.isPrototypeOf(x)
 } : function () { return false }
@@ -49,15 +60,7 @@ function http (url, _config, data) {
     url = null
   }
 
-  var config = plainOptions([http_defaults, _config || {}, url ? { url: isArray(url) ? url : [url] } : {}])
-
-  // console.log('http.headers', config.headers, [http_defaults, _config || {}, url ? { url: isArray(url) ? url : [url] } : {}] )
-
-  if( config.url instanceof Array ) config.url = joinPaths( config.url.map(function (_path_part) {
-    if( isFunction(_path_part) ) _path_part = _path_part(config)
-    if( !isString(_path_part) ) throw new TypeError('url_part should be a String')
-    return _path_part
-  }) )
+  var config = _plainConfig([http_defaults, _config || {}, url ? { url: isArray(url) ? url : [url] } : {}])
 
   config.method = config.method ? config.method.toUpperCase() : 'GET'
   config.timestamp = new Date().getTime()
@@ -193,8 +196,16 @@ function _httpBase (target, options, options_pile) {
       return _httpBase( _requestMethod('get'), options, options_pile.concat(options) )
     },
     config: function (_options) {
-      if( _options === undefined ) return plainOptions( options_pile.concat(options) )
+      if( _options === undefined ) return _plainConfig( options_pile )
       merge( options, _options )
+    },
+    getUrl: function (params) {
+      var _config = _plainConfig( options_pile.concat({ params: params }) )
+
+      return _fullUrl(
+        _config.url,
+        _config.params
+      )
     },
     addInterceptor: function (interceptor_definitions) {
       options.interceptors = options.interceptors || []
@@ -220,8 +231,11 @@ http.useRequest = function (__makeRequest) {
 }
 
 http.config = function (options) {
+  if( options === undefined ) return copy(http_defaults)
   merge( http_defaults, options )
   return http
 }
+
+http.fullUrl = _fullUrl
 
 export default http
