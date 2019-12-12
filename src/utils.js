@@ -111,6 +111,10 @@ export function resolveFunctions (o, args, this_arg) {
   for( var key in o ) {
     if( isFunction(o[key]) ) {
       o[key] = o[key].apply(this_arg, args)
+    } else if( isArray(o[key]) ) {
+      o[key] = o[key].map(function (_o) {
+        return resolveFunctions(_o, args, this_arg)
+      })
     } else if( isObject(o[key]) ) {
       o[key] = resolveFunctions(o[key], args, this_arg)
     }
