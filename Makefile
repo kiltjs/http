@@ -1,5 +1,5 @@
-# --- jstool-http
-# http://krishicks.com/post/subtree-gh-pages/
+#!make
+SHELL := env PATH=$(shell npm bin):$(PATH) /bin/bash
 
 git_branch := $(shell git rev-parse --abbrev-ref HEAD)
 
@@ -9,25 +9,31 @@ install:
 	@npm install
 
 test: install
-	$(shell npm bin)/eslint src
-	$(shell npm bin)/mocha --require babel-core/register tests
+	eslint src
+	mocha --require babel-core/register tests
 
 build: test
-	$(shell npm bin)/rollup src/http-browser.js --format cjs --output dist/browser.js
-	$(shell npm bin)/rollup src/http-browser.js --format umd --output dist/browser.umd.js -n \$$http
-	$(shell npm bin)/rollup src/http-fetch.js --format cjs --output dist/fetch.js
-	$(shell npm bin)/rollup src/http-fetch.js --format umd --output dist/fetch.umd.js -n \$$http
-	$(shell npm bin)/rollup src/http-rest.js --format cjs --output dist/http-rest.js
-	$(shell npm bin)/babel src/query-string.js --out-file dist/query-string.js
+	rollup src/http-browser.js --format cjs --output dist/browser.js & \
+	rollup src/http-browser.js --format umd --output dist/browser.umd.js -n \$$http & \
+	rollup src/http-fetch.js --format cjs --output dist/fetch.js & \
+	rollup src/http-fetch.js --format umd --output dist/fetch.umd.js -n \$$http & \
+	rollup src/http-rest.js --format cjs --output dist/http-rest.js & \
+	babel src/query-string.js --out-file dist/query-string.js & \
+	wait
+
 	cp src/http-node.js dist/http-node.js
 	cp package.json dist/package.json
 	cp LICENSE dist/LICENSE
 	cp README.md dist/README.md
 
+npm.badge:
+	mkdir -p media
+	badge npm v$(shell node -e "process.stdout.write(require('./package').version + '\n')") :blue .svg > media/npm-version.svg
+
 npm.increaseVersion:
 	npm version patch --no-git-tag-version
 
-npm.pushVersion: npm.increaseVersion
+npm.pushVersion: npm.increaseVersion npm.badge
 	git commit -a -n -m "v$(shell node -e "process.stdout.write(require('./package').version + '\n')")" 2> /dev/null; true
 	git push origin $(master_branch)
 
@@ -46,6 +52,7 @@ npm.publish: npm.pushVersion git.tag
 	git reset --hard origin/$(git_branch)
 	@git checkout $(git_branch)
 
+# http://krishicks.com/post/subtree-gh-pages/
 github.release: export PKG_NAME=$(shell node -e "console.log(require('./package.json').name);")
 github.release: export PKG_VERSION=$(shell node -e "console.log('v'+require('./package.json').version);")
 github.release: export RELEASE_URL=$(shell curl -s -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${GITHUB_TOKEN}" \

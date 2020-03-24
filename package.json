@@ -23,6 +23,7 @@
   "homepage": "https://github.com/kiltjs/http-rest",
   "dependencies": {},
   "devDependencies": {
+    "gh-badges": "^2.2.1",
     "babel-cli": "6.26.0",
     "babel-core": "6.26.3",
     "babel-preset-env": "1.7.0",
