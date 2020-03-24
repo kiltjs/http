@@ -4,9 +4,9 @@
 `ajax / http` wrapper for browser and node that allows config inheritance ( uses [fetch API](https://developer.mozilla.org/es/docs/Web/API/Fetch_API) when present )
 
 [![ᴋɪʟᴛ ᴊs](https://jesus.germade.dev/assets/images/badge-kiltjs.svg)](https://github.com/kiltjs)
-[![npm](https://img.shields.io/npm/v/@kilt/http.svg)](https://www.npmjs.com/package/@kilt/http)
+[![npm](https://badgen.net/npm/v/@kilt/http)](https://www.npmjs.com/package/@kilt/http)
 [![Build Status](https://travis-ci.org/kiltjs/http.svg?branch=master)](https://travis-ci.org/kiltjs/http)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub license](https://kiltjs.github.io/assets/images/badge-license-mit.svg)](LICENSE)
 
 ### Installation
 
